@@ -512,7 +512,7 @@ export const CompoundInterestCalculator: React.FC<{ onNavigate?: (path: string) 
       </div>
 
       {/* Year-by-Year Schedule Table */}
-      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 shadow-xs space-y-4">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-6 shadow-xs space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="font-extrabold text-slate-900 dark:text-white text-base flex items-center gap-2">
             <Calendar className="w-5 h-5 text-emerald-600" />

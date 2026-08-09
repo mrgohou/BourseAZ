@@ -131,7 +131,7 @@ export const ComparisonPage: React.FC<ComparisonPageProps> = ({ initialSymbol = 
       ) : (
         <>
           {/* Stock Selection Bar */}
-      <div className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs space-y-4">
+      <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
         <label className="text-xs font-extrabold uppercase tracking-wider text-slate-600 block">
           Actions sélectionnées ({selectedSymbols.length} / 3)
         </label>
@@ -181,7 +181,7 @@ export const ComparisonPage: React.FC<ComparisonPageProps> = ({ initialSymbol = 
       </div>
 
       {/* Winner Spotlight Banner */}
-      <div className="p-6 rounded-3xl bg-gradient-to-r from-blue-900 to-indigo-900 text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+      <div className="p-6 rounded-2xl bg-gradient-to-r from-blue-900 to-indigo-900 text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
         <div className="flex items-center gap-4">
           <div className="w-14 h-14 rounded-2xl bg-amber-400 text-slate-900 flex items-center justify-center shrink-0 shadow-lg">
             <Trophy className="w-8 h-8" />
@@ -218,7 +218,7 @@ export const ComparisonPage: React.FC<ComparisonPageProps> = ({ initialSymbol = 
       )}
 
       {/* Detailed Ratios Table */}
-      <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
+      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
         <div className="p-6 border-b border-slate-100">
           <h3 className="text-base font-bold text-slate-900">Tableau de Comparaison des Ratios Financiers</h3>
         </div>

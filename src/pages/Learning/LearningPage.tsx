@@ -130,7 +130,7 @@ export const LearningPage: React.FC<LearningPageProps> = ({ onNavigate }) => {
               <div
                 key={module.id}
                 onClick={() => handleOpenModule(module)}
-                className={`p-6 rounded-3xl border transition-all cursor-pointer group flex flex-col justify-between space-y-4 ${
+                className={`p-6 rounded-2xl border transition-all cursor-pointer group flex flex-col justify-between space-y-4 ${
                   isCompleted
                     ? 'bg-emerald-50/40 border-emerald-200 hover:border-emerald-400'
                     : 'bg-white border-slate-200/80 hover:border-blue-300 hover:shadow-lg'

@@ -291,7 +291,7 @@ export const InteractiveGlossary: React.FC = () => {
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Glossary Top Header */}
-      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl space-y-4 border border-indigo-800/40">
+      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-900 text-white rounded-2xl p-6 sm:p-8 shadow-xl space-y-4 border border-indigo-800/40">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-black uppercase tracking-wider border border-indigo-500/30">
             <BookOpen className="w-3.5 h-3.5" />
@@ -320,7 +320,7 @@ export const InteractiveGlossary: React.FC = () => {
 
       {/* FLASHCARD REVISION MODE */}
       {quizMode ? (
-        <div className="max-w-2xl mx-auto p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl text-center space-y-6">
+        <div className="max-w-2xl mx-auto p-8 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl text-center space-y-6">
           <div className="flex justify-between items-center text-xs font-bold text-slate-600 dark:text-slate-400">
             <span>Flashcard {quizIndex + 1} / {GLOSSARY_TERMS.length}</span>
             <span className="px-2.5 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300">
@@ -392,7 +392,7 @@ export const InteractiveGlossary: React.FC = () => {
         /* REGULAR DIRECTORY MODE */
         <div className="space-y-6">
           {/* Search & Filter Controls */}
-          <div className="bg-white dark:bg-slate-900 p-5 sm:p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
+          <div className="bg-white dark:bg-slate-900 p-5 sm:p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
               {/* Search Bar */}
               <div className="md:col-span-7 relative">
@@ -494,7 +494,7 @@ export const InteractiveGlossary: React.FC = () => {
                 return (
                   <div
                     key={term.id}
-                    className={`bg-white dark:bg-slate-900 rounded-3xl border transition-all duration-200 overflow-hidden ${
+                    className={`bg-white dark:bg-slate-900 rounded-2xl border transition-all duration-200 overflow-hidden ${
                       isExpanded
                         ? 'border-indigo-500/80 shadow-md ring-1 ring-indigo-500/20'
                         : 'border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 shadow-xs'

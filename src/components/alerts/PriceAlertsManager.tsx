@@ -90,7 +90,7 @@ export const PriceAlertsManager: React.FC<PriceAlertsManagerProps> = ({ onNaviga
       )}
 
       {/* Hero Banner */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-slate-900 text-white shadow-xl border border-slate-800 space-y-4">
+      <div className="p-6 sm:p-8 rounded-2xl bg-slate-900 text-white shadow-xl border border-slate-800 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="space-y-2 max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 text-xs font-black uppercase tracking-wider border border-blue-500/30">
@@ -117,7 +117,7 @@ export const PriceAlertsManager: React.FC<PriceAlertsManagerProps> = ({ onNaviga
       </div>
 
       {/* Alerts Grid */}
-      <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs space-y-6">
+      <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-6">
         <div className="flex items-center justify-between border-b border-slate-100 pb-4">
           <div>
             <h3 className="font-extrabold text-slate-900 text-base flex items-center gap-2">
@@ -136,7 +136,7 @@ export const PriceAlertsManager: React.FC<PriceAlertsManagerProps> = ({ onNaviga
         </div>
 
         {priceAlerts.length === 0 ? (
-          <div className="p-12 text-center bg-slate-50 rounded-3xl border border-dashed border-slate-200 space-y-3">
+          <div className="p-12 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200 space-y-3">
             <Bell className="w-10 h-10 text-slate-400 mx-auto" />
             <h4 className="font-bold text-slate-800 text-base">Aucune alerte configurée</h4>
             <p className="text-xs text-slate-500 max-w-md mx-auto">
@@ -151,7 +151,7 @@ export const PriceAlertsManager: React.FC<PriceAlertsManagerProps> = ({ onNaviga
             {priceAlerts.map(alert => (
               <div
                 key={alert.id}
-                className={`p-5 rounded-3xl border transition-all space-y-4 flex flex-col justify-between ${
+                className={`p-5 rounded-2xl border transition-all space-y-4 flex flex-col justify-between ${
                   alert.triggered
                     ? 'bg-amber-50/50 border-amber-300 ring-1 ring-amber-200'
                     : alert.active
@@ -263,7 +263,7 @@ export const PriceAlertsManager: React.FC<PriceAlertsManagerProps> = ({ onNaviga
       </div>
 
       {/* Dispatched Notification Logs Section */}
-      <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs space-y-4">
+      <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div className="flex items-center gap-2 font-bold text-slate-900 text-base">
             <Inbox className="w-5 h-5 text-blue-700" />
@@ -321,7 +321,7 @@ export const PriceAlertsManager: React.FC<PriceAlertsManagerProps> = ({ onNaviga
       {/* Log Modal Preview */}
       {selectedLog && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl border border-slate-200 animate-scale-in">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl border border-slate-200 animate-scale-in">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2 font-black text-slate-900 text-sm">
                 {selectedLog.type === 'EMAIL' ? (

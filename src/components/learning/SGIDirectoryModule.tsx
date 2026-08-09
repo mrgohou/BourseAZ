@@ -66,7 +66,7 @@ export const SGIDirectoryModule: React.FC<SGIDirectoryModuleProps> = ({ onNaviga
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Educational Banner */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-slate-900 via-indigo-950 to-blue-950 text-white shadow-xl border border-indigo-800/40 space-y-4">
+      <div className="p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-slate-900 via-indigo-950 to-blue-950 text-white shadow-xl border border-indigo-800/40 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="space-y-2 max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-black uppercase tracking-wider border border-emerald-500/30">
@@ -92,7 +92,7 @@ export const SGIDirectoryModule: React.FC<SGIDirectoryModuleProps> = ({ onNaviga
       </div>
 
       {/* 4 Key Decision Criteria Guide */}
-      <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs space-y-4">
+      <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
         <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
           <Sparkles className="w-5 h-5 text-amber-500" />
           <h3 className="font-extrabold text-slate-900 text-base">
@@ -144,7 +144,7 @@ export const SGIDirectoryModule: React.FC<SGIDirectoryModuleProps> = ({ onNaviga
       </div>
 
       {/* Filter and Search Bar Controls */}
-      <div className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs space-y-4">
+      <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
         <div className="flex flex-col md:flex-row gap-3 justify-between items-stretch md:items-center">
           {/* Search Bar */}
           <div className="relative flex-1">
@@ -281,7 +281,7 @@ export const SGIDirectoryModule: React.FC<SGIDirectoryModuleProps> = ({ onNaviga
           filteredSGIs.map(sgi => (
             <div
               key={sgi.id}
-              className={`p-6 rounded-3xl border transition-all space-y-4 bg-white flex flex-col justify-between ${
+              className={`p-6 rounded-2xl border transition-all space-y-4 bg-white flex flex-col justify-between ${
                 sgi.featured
                   ? 'border-blue-300 shadow-md ring-1 ring-blue-100'
                   : 'border-slate-200/80 shadow-xs hover:border-slate-300'

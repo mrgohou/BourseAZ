@@ -46,7 +46,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
 
   if (!isAdmin) {
     return (
-      <div className="max-w-md mx-auto my-12 p-8 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 text-center space-y-4 shadow-md">
+      <div className="max-w-md mx-auto my-12 p-8 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 text-center space-y-4 shadow-md">
         <Lock className="w-12 h-12 text-rose-500 mx-auto" />
         <h2 className="text-xl font-bold text-slate-900 dark:text-white">Accès Administrateur Restreint</h2>
         <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -112,7 +112,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
       </div>
 
       {/* File Import Section */}
-      <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
+      <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
         <h3 className="font-bold text-slate-900 dark:text-white text-base flex items-center gap-2">
           <Upload className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
           Importer un Fichier Officiel BRVM (CSV / JSON)
@@ -175,7 +175,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
       </div>
 
       {/* Pending Reviews Queue Table */}
-      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden space-y-4">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden space-y-4">
         <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
           <h3 className="text-base font-bold text-slate-900 dark:text-white">
             File d'Attente de Validation Admin ({reviews.length})
@@ -263,7 +263,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
       </div>
 
       {/* Audit Logs */}
-      <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-3">
+      <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-3">
         <h3 className="font-bold text-slate-900 dark:text-white text-base">Journal d’Audit & Historique des Corrections</h3>
         <div className="space-y-2 text-xs font-mono">
           {auditLogs.length === 0 ? (

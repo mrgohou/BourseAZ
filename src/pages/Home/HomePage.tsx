@@ -25,7 +25,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
   return (
     <div className="space-y-12 pb-12">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 text-white rounded-3xl p-6 sm:p-12 shadow-xl">
+      <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 text-white rounded-2xl sm:rounded-3xl p-6 sm:p-10 shadow-xl">
         <div className="absolute top-0 right-0 -mr-16 -mt-16 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-0 -ml-16 -mb-16 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
 
@@ -116,7 +116,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
       </section>
 
       {/* How it works grid */}
-      <section className="bg-white rounded-3xl border border-slate-100 p-6 sm:p-10 space-y-8 shadow-sm">
+      <section className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 sm:p-10 space-y-8 shadow-sm">
         <div className="text-center max-w-2xl mx-auto space-y-2">
           <span className="text-xs font-extrabold uppercase tracking-widest text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100">
             Parcours Débutant
@@ -191,7 +191,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
       </section>
 
       {/* CTA Box */}
-      <section className="bg-gradient-to-br from-slate-900 to-indigo-950 text-white rounded-3xl p-8 sm:p-10 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+      <section className="bg-gradient-to-br from-slate-900 to-indigo-950 text-white rounded-2xl p-8 sm:p-10 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
         <div className="space-y-2 max-w-xl">
           <h2 className="text-2xl font-black tracking-tight">Sauvegardez vos simulations et analyses</h2>
           <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-medium">

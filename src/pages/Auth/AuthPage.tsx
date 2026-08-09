@@ -30,7 +30,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onNavigate }) => {
 
   if (isAuthenticated && user) {
     return (
-      <div className="max-w-md mx-auto my-12 p-8 bg-white rounded-3xl border border-slate-200 text-center space-y-4 shadow-lg">
+      <div className="max-w-md mx-auto my-12 p-8 bg-white rounded-2xl border border-slate-200 text-center space-y-4 shadow-lg">
         <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
           <CheckCircle2 className="w-8 h-8" />
         </div>
@@ -130,7 +130,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onNavigate }) => {
 
       {errorMsg && <Alert type="error">{errorMsg}</Alert>}
 
-      <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-xl space-y-6">
+      <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200/80 shadow-xl space-y-6">
         {mode === 'SELECT' && (
           <div className="space-y-4">
             {/* Google OAuth button */}

@@ -191,7 +191,7 @@ export const DividendYieldComparer: React.FC<DividendYieldComparerProps> = ({ on
   return (
     <div className="space-y-8">
       {/* Tool Title & Subtitle */}
-      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/90 dark:border-slate-800 p-6 sm:p-8 shadow-xs space-y-6">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/90 dark:border-slate-800 p-6 sm:p-8 shadow-xs space-y-6">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-6">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
@@ -389,7 +389,7 @@ export const DividendYieldComparer: React.FC<DividendYieldComparerProps> = ({ on
       </div>
 
       {/* Interactive Passive Income Calculator */}
-      <div className="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white p-6 sm:p-8 rounded-3xl shadow-xl space-y-6">
+      <div className="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white p-6 sm:p-8 rounded-2xl shadow-xl space-y-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-6">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
@@ -470,7 +470,7 @@ export const DividendYieldComparer: React.FC<DividendYieldComparerProps> = ({ on
       </div>
 
       {/* Detailed Historical Data Table */}
-      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-xs overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-xs overflow-hidden">
         <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
           <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <Layers className="w-5 h-5 text-blue-700 dark:text-blue-400" />

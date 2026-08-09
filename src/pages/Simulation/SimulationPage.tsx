@@ -184,7 +184,7 @@ export const SimulationPage: React.FC<SimulationPageProps> = ({ initialSymbol = 
       {activeTab === 'quick' && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Controls Form Column */}
-          <div className="lg:col-span-5 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs space-y-5">
+          <div className="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-5">
             <h3 className="font-bold text-slate-900 text-base border-b border-slate-100 pb-3 flex items-center gap-2">
               <Calculator className="w-5 h-5 text-blue-700" />
               Paramètres de la Simulation
@@ -323,7 +323,7 @@ export const SimulationPage: React.FC<SimulationPageProps> = ({ initialSymbol = 
             )}
 
             {simulationResult && (
-              <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-md space-y-6 animate-fade-in">
+              <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200/80 shadow-md space-y-6 animate-fade-in">
                 {/* Result Top Hero Card */}
                 <div
                   className={`p-6 rounded-2xl border text-white space-y-3 ${

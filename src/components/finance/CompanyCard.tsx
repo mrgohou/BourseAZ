@@ -22,7 +22,7 @@ export const CompanyCard: React.FC<CompanyCardProps> = ({
   return (
     <div
       onClick={() => onSelect(company.symbol)}
-      className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm p-6 hover:shadow-md hover:border-indigo-200 dark:hover:border-indigo-800 transition-all cursor-pointer group flex flex-col justify-between"
+      className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm p-5 sm:p-6 hover:shadow-md hover:border-indigo-200 dark:hover:border-indigo-800 transition-all cursor-pointer group flex flex-col justify-between"
     >
       <div>
         {/* Top Header */}

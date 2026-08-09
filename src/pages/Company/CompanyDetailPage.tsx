@@ -170,7 +170,7 @@ export const CompanyDetailPage: React.FC<CompanyDetailPageProps> = ({ symbol, on
       )}
 
       {/* Main Stock Header Card */}
-      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 sm:p-8 shadow-xs space-y-6">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-6 sm:p-8 shadow-xs space-y-6">
         {/* Pending Review Notice Banner */}
         {company.status === 'PENDING_REVIEW' && (
           <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/80 border border-amber-200 dark:border-amber-800 text-xs text-amber-900 dark:text-amber-300 font-bold flex items-center gap-2">
@@ -290,7 +290,7 @@ export const CompanyDetailPage: React.FC<CompanyDetailPageProps> = ({ symbol, on
       </div>
 
       {/* Intrinsic Cost vs Current Value Analysis Section */}
-      <div className="bg-gradient-to-br from-indigo-900 via-slate-900 to-slate-950 text-white rounded-3xl p-6 sm:p-8 space-y-6 shadow-md border border-indigo-800/40">
+      <div className="bg-gradient-to-br from-indigo-900 via-slate-900 to-slate-950 text-white rounded-2xl p-6 sm:p-8 space-y-6 shadow-md border border-indigo-800/40">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-indigo-800/60 pb-4">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-extrabold mb-1">

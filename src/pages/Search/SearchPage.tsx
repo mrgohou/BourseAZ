@@ -172,7 +172,7 @@ export const SearchPage: React.FC<SearchPageProps> = ({ initialQuery = '', onNav
           <SkeletonCard />
         </div>
       ) : filteredCompanies.length === 0 ? (
-        <div className="p-10 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 text-center space-y-4 max-w-lg mx-auto shadow-xs">
+        <div className="p-10 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 text-center space-y-4 max-w-lg mx-auto shadow-xs">
           <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center mx-auto">
             <AlertCircle className="w-8 h-8" />
           </div>

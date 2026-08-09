@@ -159,7 +159,7 @@ export const PortfolioPerformanceChart: React.FC<PortfolioPerformanceChartProps>
   const brvmAlpha = latestPoint ? (latestPoint.portfolioReturnPercent - latestPoint.brvmReturnPercent).toFixed(1) : '0';
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-sm p-5 sm:p-7 space-y-6">
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-sm p-5 sm:p-7 space-y-6">
       {/* Header & Controls */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-5">
         <div className="space-y-1">
