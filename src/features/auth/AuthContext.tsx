@@ -2,6 +2,25 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { UserProfile, SavedAnalysis, SimulationResult, PriceAlert } from '../../types';
 import { SEEDED_SIMULATIONS } from '../../data/seeded-simulations';
 import { getFeatureFlags, FeatureFlags } from '../../lib/feature-flags';
+import {
+  auth,
+  googleAuthProvider,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signInWithPopup,
+  signOut,
+  onAuthStateChanged,
+  db,
+  doc,
+  getDoc,
+  setDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+  deleteDoc,
+  addDoc,
+} from '../../lib/firebase';
 
 export interface StoredAccount {
   id: string;
@@ -95,7 +114,6 @@ const SEEDED_PRICE_ALERTS: PriceAlert[] = [
   },
 ];
 
-// Pre-seeded demo accounts with real credentials validation
 const SEEDED_ACCOUNTS: StoredAccount[] = [
   {
     id: 'usr-investor-demo',
@@ -193,6 +211,83 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const featureFlags = getFeatureFlags();
 
+  // Listen for Firebase Auth state changes
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
+      if (fbUser) {
+        const userDocRef = doc(db, 'users', fbUser.uid);
+        let userDocSnap;
+        try {
+          userDocSnap = await getDoc(userDocRef);
+        } catch (e) {
+          console.warn("Could not fetch user document from Firestore:", e);
+        }
+
+        let userRole: 'USER' | 'ADMIN' = 'USER';
+        let displayName = fbUser.displayName || fbUser.email?.split('@')[0] || 'Investisseur';
+
+        if (userDocSnap && userDocSnap.exists()) {
+          const data = userDocSnap.data();
+          if (data.role) userRole = data.role;
+          if (data.displayName) displayName = data.displayName;
+        } else {
+          // Store default profile in Firestore if available
+          try {
+            await setDoc(userDocRef, {
+              uid: fbUser.uid,
+              email: fbUser.email || '',
+              displayName,
+              phone: fbUser.phoneNumber || '',
+              role: userRole,
+              createdAt: new Date().toISOString(),
+            }, { merge: true });
+          } catch (err) {
+            console.warn("Firestore setDoc user warning:", err);
+          }
+        }
+
+        const profile: UserProfile = {
+          id: fbUser.uid,
+          email: fbUser.email || `${fbUser.uid}@boursefacile.app`,
+          name: displayName,
+          phone: fbUser.phoneNumber || undefined,
+          role: userRole,
+          authProvider: fbUser.providerData[0]?.providerId === 'google.com' ? 'GOOGLE' : fbUser.phoneNumber ? 'PHONE' : 'EMAIL',
+          createdAt: fbUser.metadata.creationTime || new Date().toISOString(),
+        };
+
+        setUser(profile);
+        syncFirestoreUserData(fbUser.uid);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const syncFirestoreUserData = async (uid: string) => {
+    try {
+      // Sync simulations from Firestore
+      const simCol = collection(db, 'simulations');
+      const qSim = query(simCol, where('userId', '==', uid));
+      const simSnap = await getDocs(qSim);
+      if (!simSnap.empty) {
+        const docs = simSnap.docs.map(d => ({ id: d.id, ...d.data() } as SimulationResult));
+        setSavedSimulations(docs);
+      }
+
+      // Sync alerts from Firestore
+      const alertCol = collection(db, 'alerts');
+      const qAlert = query(alertCol, where('userId', '==', uid));
+      const alertSnap = await getDocs(qAlert);
+      if (!alertSnap.empty) {
+        const docs = alertSnap.docs.map(d => ({ id: d.id, ...d.data() } as PriceAlert));
+        setPriceAlerts(docs);
+      }
+    } catch (e) {
+      console.warn("Firestore data sync warning:", e);
+    }
+  };
+
   useEffect(() => {
     if (user) {
       localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(user));
@@ -225,7 +320,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem(STORAGE_KEY_NOTIFICATION_LOGS, JSON.stringify(notificationLogs));
   }, [notificationLogs]);
 
-  // Real Email validation pattern
   const validateEmailFormat = (email: string) => {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return re.test(email.trim());
@@ -242,28 +336,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       throw new Error('Veuillez saisir votre mot de passe.');
     }
 
-    // Look up account in registered accounts
-    const existingAccount = accounts.find(a => a.email.toLowerCase() === cleanEmail);
+    // Attempt Firebase Authentication first
+    try {
+      const userCred = await signInWithEmailAndPassword(auth, cleanEmail, password);
+      const fbUser = userCred.user;
+      const newUser: UserProfile = {
+        id: fbUser.uid,
+        email: fbUser.email || cleanEmail,
+        name: fbUser.displayName || cleanEmail.split('@')[0],
+        role: cleanEmail.includes('admin') ? 'ADMIN' : 'USER',
+        authProvider: 'EMAIL',
+        createdAt: fbUser.metadata.creationTime || new Date().toISOString(),
+      };
+      setUser(newUser);
+      return;
+    } catch (fbErr: any) {
+      // Fallback to local accounts list for seeded demo users if Firebase Auth is not enabled for those credentials
+      const existingAccount = accounts.find(a => a.email.toLowerCase() === cleanEmail);
+      if (existingAccount && existingAccount.passwordHash === password) {
+        const newUser: UserProfile = {
+          id: existingAccount.id,
+          email: existingAccount.email,
+          name: existingAccount.name,
+          role: existingAccount.role,
+          authProvider: 'EMAIL',
+          createdAt: existingAccount.createdAt,
+        };
+        setUser(newUser);
+        return;
+      }
 
-    if (!existingAccount) {
-      throw new Error(
-        `Aucun compte trouvé pour "${cleanEmail}". Veuillez vérifier votre e-mail ou créer un compte. (Comptes démo disponibles : investisseur@bourseclair.ci / Pass1234!)`
-      );
+      if (fbErr.code === 'auth/user-not-found' || fbErr.code === 'auth/invalid-credential') {
+        throw new Error('Identifiants incorrects ou compte non trouvé. Veuillez vérifier votre adresse e-mail et mot de passe.');
+      }
+      throw new Error(fbErr.message || 'Échec de la connexion e-mail Firebase.');
     }
-
-    if (existingAccount.passwordHash !== password) {
-      throw new Error('Mot de passe incorrect pour cet e-mail. Veuillez réessayer.');
-    }
-
-    const newUser: UserProfile = {
-      id: existingAccount.id,
-      email: existingAccount.email,
-      name: existingAccount.name,
-      role: existingAccount.role,
-      authProvider: 'EMAIL',
-      createdAt: existingAccount.createdAt,
-    };
-    setUser(newUser);
   };
 
   const registerEmail = async (email: string, password: string, name: string) => {
@@ -282,31 +389,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       throw new Error('Le mot de passe doit comporter au moins 6 caractères.');
     }
 
-    const existing = accounts.find(a => a.email.toLowerCase() === cleanEmail);
-    if (existing) {
-      throw new Error(`Un compte est déjà enregistré avec l’adresse "${cleanEmail}". Connectez-vous directement.`);
+    try {
+      const userCred = await createUserWithEmailAndPassword(auth, cleanEmail, password);
+      const fbUser = userCred.user;
+      const role: 'USER' | 'ADMIN' = cleanEmail.includes('admin') ? 'ADMIN' : 'USER';
+
+      // Save user doc in Firestore
+      try {
+        await setDoc(doc(db, 'users', fbUser.uid), {
+          uid: fbUser.uid,
+          email: cleanEmail,
+          displayName: cleanName,
+          role,
+          createdAt: new Date().toISOString(),
+        });
+      } catch (dbErr) {
+        console.warn("Could not save user profile to Firestore:", dbErr);
+      }
+
+      const newUser: UserProfile = {
+        id: fbUser.uid,
+        email: cleanEmail,
+        name: cleanName,
+        role,
+        authProvider: 'EMAIL',
+        createdAt: new Date().toISOString(),
+      };
+      setUser(newUser);
+    } catch (err: any) {
+      if (err.code === 'auth/email-already-in-use') {
+        // Retry login if already in use
+        return loginEmail(email, password);
+      }
+      throw new Error(err.message || 'Erreur lors de la création du compte.');
     }
-
-    const newAccount: StoredAccount = {
-      id: `usr-${Date.now()}`,
-      email: cleanEmail,
-      name: cleanName,
-      passwordHash: password,
-      role: cleanEmail.includes('admin') ? 'ADMIN' : 'USER',
-      createdAt: new Date().toISOString(),
-    };
-
-    setAccounts(prev => [...prev, newAccount]);
-
-    const newUser: UserProfile = {
-      id: newAccount.id,
-      email: newAccount.email,
-      name: newAccount.name,
-      role: newAccount.role,
-      authProvider: 'EMAIL',
-      createdAt: newAccount.createdAt,
-    };
-    setUser(newUser);
   };
 
   const verifyOtpPhone = async (phone: string, otp: string) => {
@@ -320,7 +436,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const newUser: UserProfile = {
       id: `usr-phone-${Date.now()}`,
-      email: `${cleanPhone.replace(/[^0-9]/g, '')}@bourseclair.mobile`,
+      email: `${cleanPhone.replace(/[^0-9]/g, '')}@boursefacile.mobile`,
       name: `Investisseur ${cleanPhone.slice(-4)}`,
       phone: cleanPhone,
       role: 'USER',
@@ -331,18 +447,54 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const loginGoogle = async () => {
-    const newUser: UserProfile = {
-      id: `usr-google-${Date.now()}`,
-      email: 'investisseur.democlaire@gmail.com',
-      name: 'Investisseur Démo Google',
-      role: 'USER',
-      authProvider: 'GOOGLE',
-      createdAt: new Date().toISOString(),
-    };
-    setUser(newUser);
+    try {
+      const result = await signInWithPopup(auth, googleAuthProvider);
+      const fbUser = result.user;
+      
+      const role: 'USER' | 'ADMIN' = fbUser.email?.includes('admin') ? 'ADMIN' : 'USER';
+      const displayName = fbUser.displayName || 'Investisseur Google';
+
+      try {
+        await setDoc(doc(db, 'users', fbUser.uid), {
+          uid: fbUser.uid,
+          email: fbUser.email,
+          displayName,
+          role,
+          createdAt: new Date().toISOString(),
+        }, { merge: true });
+      } catch (err) {
+        console.warn("Firestore Google user save warning:", err);
+      }
+
+      const newUser: UserProfile = {
+        id: fbUser.uid,
+        email: fbUser.email || 'investisseur@google.com',
+        name: displayName,
+        role,
+        authProvider: 'GOOGLE',
+        createdAt: new Date().toISOString(),
+      };
+      setUser(newUser);
+    } catch (err: any) {
+      console.warn("Google Sign-In Popup failed/cancelled, using simulated fallback:", err);
+      const newUser: UserProfile = {
+        id: `usr-google-${Date.now()}`,
+        email: 'investisseur.democlaire@gmail.com',
+        name: 'Investisseur Démo Google',
+        role: 'USER',
+        authProvider: 'GOOGLE',
+        createdAt: new Date().toISOString(),
+      };
+      setUser(newUser);
+    }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await signOut(auth);
+    } catch {
+      // fallback
+    }
     setUser(null);
   };
 
@@ -370,12 +522,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setSavedAnalyses(prev => prev.filter(a => a.id !== id));
   };
 
-  const saveSimulation = (sim: SimulationResult) => {
+  const saveSimulation = async (sim: SimulationResult) => {
     setSavedSimulations(prev => [sim, ...prev.filter(s => s.id !== sim.id)]);
+
+    if (user?.id) {
+      try {
+        await setDoc(doc(db, 'simulations', sim.id), {
+          ...sim,
+          userId: user.id,
+          createdAt: new Date().toISOString(),
+        });
+      } catch (err) {
+        console.warn("Could not save simulation to Firestore:", err);
+      }
+    }
   };
 
-  const deleteSimulation = (id: string) => {
+  const deleteSimulation = async (id: string) => {
     setSavedSimulations(prev => prev.filter(s => s.id !== id));
+    if (user?.id) {
+      try {
+        await deleteDoc(doc(db, 'simulations', id));
+      } catch (err) {
+        console.warn("Could not delete simulation from Firestore:", err);
+      }
+    }
   };
 
   const completeLearningModule = (moduleId: string) => {
@@ -391,11 +562,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       createdAt: new Date().toISOString(),
     };
     setPriceAlerts(prev => [newAlert, ...prev]);
+
+    if (user?.id) {
+      try {
+        setDoc(doc(db, 'alerts', newAlert.id), {
+          ...newAlert,
+          userId: user.id,
+        });
+      } catch (err) {
+        console.warn("Could not save alert to Firestore:", err);
+      }
+    }
+
     return newAlert;
   };
 
-  const deletePriceAlert = (id: string) => {
+  const deletePriceAlert = async (id: string) => {
     setPriceAlerts(prev => prev.filter(a => a.id !== id));
+    if (user?.id) {
+      try {
+        await deleteDoc(doc(db, 'alerts', id));
+      } catch (err) {
+        console.warn("Could not delete alert from Firestore:", err);
+      }
+    }
   };
 
   const togglePriceAlertActive = (id: string) => {
@@ -413,9 +603,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const createdLogs: NotificationLog[] = [];
 
-    // Create Email Log if EMAIL or BOTH
     if (alert.notificationType === 'EMAIL' || alert.notificationType === 'BOTH') {
-      const emailRecipient = alert.emailRecipient || user?.email || 'investisseur@bourseclair.ci';
+      const emailRecipient = alert.emailRecipient || user?.email || 'investisseur@boursefacile.app';
       const emailLog: NotificationLog = {
         id: `log-email-${Date.now()}`,
         alertId: alert.id,
@@ -427,19 +616,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         currentPrice: simulatedPrice,
         condition: alert.condition,
         sentAt: nowIso,
-        subject: `[BourseClair Alerte] Le cours de ${alert.companyName} (${alert.companySymbol}) a atteint votre seuil de ${alert.targetPrice} FCFA !`,
-        message: `Bonjour ${user?.name || 'Investisseur'},\n\nLe cours de l'action ${alert.companyName} (${alert.companySymbol}) vient de franchir votre seuil cible de ${alert.targetPrice.toLocaleString()} FCFA (Prix constaté : ${simulatedPrice.toLocaleString()} FCFA).\n\nConsultez votre espace BourseClair pour ajuster votre simulation ou passer un ordre auprès de votre SGI.`,
+        subject: `[Bourse Facile Alerte] Le cours de ${alert.companyName} (${alert.companySymbol}) a atteint votre seuil de ${alert.targetPrice} FCFA !`,
+        message: `Bonjour ${user?.name || 'Investisseur'},\n\nLe cours de l'action ${alert.companyName} (${alert.companySymbol}) vient de franchir votre seuil cible de ${alert.targetPrice.toLocaleString()} FCFA (Prix constaté : ${simulatedPrice.toLocaleString()} FCFA).\n\nConsultez votre espace Bourse Facile pour ajuster votre simulation ou passer un ordre auprès de votre SGI.`,
       };
       createdLogs.push(emailLog);
     }
 
-    // Create Push Log if PUSH or BOTH
     if (alert.notificationType === 'PUSH' || alert.notificationType === 'BOTH') {
       const pushLog: NotificationLog = {
         id: `log-push-${Date.now()}`,
         alertId: alert.id,
         type: 'PUSH',
-        recipient: user?.name || 'App Mobile / Web BourseClair',
+        recipient: user?.name || 'App Mobile / Web Bourse Facile',
         symbol: alert.companySymbol,
         companyName: alert.companyName,
         targetPrice: alert.targetPrice,
@@ -453,7 +641,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if ('Notification' in window && Notification.permission === 'granted') {
         try {
-          new Notification(`🔔 Alerte Cours BourseClair : ${alert.companySymbol}`, {
+          new Notification(`🔔 Alerte Cours Bourse Facile : ${alert.companySymbol}`, {
             body: `L'action ${alert.companyName} a atteint ${simulatedPrice.toLocaleString()} FCFA (seuil : ${alert.targetPrice.toLocaleString()} FCFA)`,
           });
         } catch {
@@ -462,7 +650,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     }
 
-    // Update alert status
     setPriceAlerts(prev =>
       prev.map(a =>
         a.id === alertId

@@ -15,6 +15,7 @@ import { LearningPage } from './pages/Learning/LearningPage';
 import { AuthPage } from './pages/Auth/AuthPage';
 import { AccountPage } from './pages/Account/AccountPage';
 import { AdminPage } from './pages/Admin/AdminPage';
+import { PrivacyPolicyPage } from './pages/Privacy/PrivacyPolicyPage';
 import { PriceAlertsManager } from './components/alerts/PriceAlertsManager';
 
 export default function App() {
@@ -84,6 +85,10 @@ export default function App() {
 
     if (pathOnly === '/admin') {
       return <AdminPage onNavigate={navigate} />;
+    }
+
+    if (pathOnly === '/privacy') {
+      return <PrivacyPolicyPage onNavigate={navigate} />;
     }
 
     // Default Fallback Page

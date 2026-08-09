@@ -1,0 +1,54 @@
+{
+  "entities": {
+    "users": {
+      "title": "User Profiles",
+      "description": "User account information and roles",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "phone": { "type": "string" },
+        "role": { "type": "string", "enum": ["USER", "ADMIN"] },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["uid", "email"]
+    },
+    "simulations": {
+      "title": "Saved Simulations",
+      "description": "User stock investment simulations",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "companySymbol": { "type": "string" },
+        "companyName": { "type": "string" },
+        "sharesCount": { "type": "number" },
+        "buyPrice": { "type": "number" },
+        "currentPrice": { "type": "number" },
+        "totalInvested": { "type": "number" },
+        "currentValue": { "type": "number" },
+        "netGainOrLoss": { "type": "number" },
+        "performancePercent": { "type": "number" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["userId", "companySymbol"]
+    },
+    "alerts": {
+      "title": "Price Alerts",
+      "description": "BRVM Stock Price Alerts",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "companySymbol": { "type": "string" },
+        "companyName": { "type": "string" },
+        "targetPrice": { "type": "number" },
+        "condition": { "type": "string", "enum": ["ABOVE", "BELOW"] },
+        "notificationType": { "type": "string", "enum": ["EMAIL", "PUSH", "BOTH"] },
+        "active": { "type": "boolean" },
+        "triggered": { "type": "boolean" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["userId", "companySymbol", "targetPrice"]
+    }
+  }
+}

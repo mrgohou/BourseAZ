@@ -47,18 +47,35 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
 
           <div>
             <h5 className="text-white font-bold mb-3 text-xs uppercase tracking-wider">Sécurité & Transparence</h5>
-            <p className="text-xs text-slate-400 leading-relaxed mb-2">
+            <p className="text-xs text-slate-400 leading-relaxed mb-3">
               Données BRVM officielles et historiques réels étiquetés en toute transparence.
             </p>
-            <div className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-emerald-400 bg-emerald-950/60 px-2.5 py-1 rounded-md border border-emerald-800/50">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              Environnement Sécurisé
+            <div className="space-y-2 text-xs">
+              <div>
+                <button
+                  onClick={() => onNavigate('/privacy')}
+                  className="text-indigo-400 hover:text-indigo-300 font-medium transition-colors cursor-pointer inline-flex items-center gap-1"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5 text-indigo-400" />
+                  Politique de confidentialité
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="pt-6 border-t border-slate-800 text-center text-xs text-slate-500">
-          © {new Date().getFullYear()} Bourse Facile - Tous droits réservés. Développé pour la communauté financière UEMOA.
+        <div className="pt-6 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+          <div>
+            © {new Date().getFullYear()} Bourse Facile - Tous droits réservés. Développé pour la communauté financière UEMOA.
+          </div>
+          <div>
+            <button
+              onClick={() => onNavigate('/privacy')}
+              className="hover:text-slate-300 underline underline-offset-2 transition-colors cursor-pointer"
+            >
+              Politique de confidentialité & Données
+            </button>
+          </div>
         </div>
       </div>
     </footer>
