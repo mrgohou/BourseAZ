@@ -48,7 +48,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate }) => {
           </div>
           <div>
             <span className="text-xl font-bold tracking-tight text-slate-800 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-              BourseClair
+              Bourse Facile
             </span>
             <span className="block text-[10px] font-extrabold uppercase tracking-widest text-indigo-600 dark:text-indigo-400 -mt-0.5">
               Nexus BRVM

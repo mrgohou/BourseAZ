@@ -121,7 +121,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
           <span className="text-xs font-extrabold uppercase tracking-widest text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100">
             Parcours Débutant
           </span>
-          <h2 className="text-2xl sm:text-3xl font-black text-slate-800">Comment fonctionne BourseClair ?</h2>
+          <h2 className="text-2xl sm:text-3xl font-black text-slate-800">Comment fonctionne Bourse Facile ?</h2>
           <p className="text-xs sm:text-sm text-slate-500 font-medium">
             Une méthode simple et pas à pas pour appréhender l’investissement boursier sans crainte.
           </p>

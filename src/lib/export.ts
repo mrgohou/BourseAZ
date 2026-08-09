@@ -22,7 +22,7 @@ export function exportSimulationToCSV(simulation: SimulationResult): void {
     ['Gain / Perte net (FCFA)', simulation.netGainOrLoss.toString()],
     ['Performance (%)', `${simulation.performancePercent} %`],
     ['Date du rapport', new Date().toISOString()],
-    ['Avertissement', 'Ce document est une simulation pédagogique BourseClair - Non contractuelle'],
+    ['Avertissement', 'Ce document est une simulation pédagogique Bourse Facile - Non contractuelle'],
   ];
 
   let csvContent = 'data:text/csv;charset=utf-8,\uFEFF';
@@ -35,7 +35,7 @@ export function exportSimulationToCSV(simulation: SimulationResult): void {
   const encodedUri = encodeURI(csvContent);
   const link = document.createElement('a');
   link.setAttribute('href', encodedUri);
-  link.setAttribute('download', `BourseClair_Simulation_${simulation.companySymbol}_${Date.now()}.csv`);
+  link.setAttribute('download', `Bourse_Facile_Simulation_${simulation.companySymbol}_${Date.now()}.csv`);
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -91,7 +91,7 @@ export function exportSimulationToPDF(simulation: SimulationResult): void {
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(20);
   doc.setFont('helvetica', 'bold');
-  doc.text('BourseClair', 15, 18);
+  doc.text('Bourse Facile', 15, 18);
 
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
@@ -184,7 +184,7 @@ export function exportSimulationToPDF(simulation: SimulationResult): void {
   doc.rect(0, y, pageWidth, 20, 'F');
   doc.setFontSize(8);
   doc.setTextColor(148, 163, 184);
-  doc.text('Avertissement: BourseClair est un outil de simulation et d\'apprentissage pédagogique. Il ne s\'agit pas d\'un conseil financier ou d\'une incitation à l\'investissement.', pageWidth / 2, y + 10, { align: 'center' });
+  doc.text('Avertissement: Bourse Facile est un outil de simulation et d\'apprentissage pédagogique. Il ne s\'agit pas d\'un conseil financier ou d\'une incitation à l\'investissement.', pageWidth / 2, y + 10, { align: 'center' });
 
-  doc.save(`BourseClair_Simulation_${simulation.companySymbol}.pdf`);
+  doc.save(`Bourse_Facile_Simulation_${simulation.companySymbol}.pdf`);
 }

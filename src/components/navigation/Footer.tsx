@@ -13,14 +13,14 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           <AlertCircle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
           <div>
             <span className="font-bold text-amber-300 block mb-1">Avertissement Pédagogique Majeur</span>
-            BourseClair est un outil de simulation et d’analyse pédagogique dédié à la compréhension de la Bourse Régionale des Valeurs Mobilières (BRVM).
+            Bourse Facile est un outil de simulation et d’analyse pédagogique dédié à la compréhension de la Bourse Régionale des Valeurs Mobilières (BRVM).
             Les simulations et données financières sont fournies à titre indicatif et ne constituent en aucun cas un conseil en investissement ou une incitation à acheter ou vendre des titres.
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 pt-4 border-t border-slate-800 text-sm">
           <div className="space-y-3">
-            <h4 className="text-white font-bold text-base">BourseClair</h4>
+            <h4 className="text-white font-bold text-base">Bourse Facile</h4>
             <p className="text-xs text-slate-400 leading-relaxed">
               La plateforme de référence pour apprendre, analyser et simuler vos investissements en Bourse à la BRVM en toute clarté.
             </p>
@@ -58,7 +58,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
         </div>
 
         <div className="pt-6 border-t border-slate-800 text-center text-xs text-slate-500">
-          © {new Date().getFullYear()} BourseClair - Tous droits réservés. Développé pour la communauté financière UEMOA.
+          © {new Date().getFullYear()} Bourse Facile - Tous droits réservés. Développé pour la communauté financière UEMOA.
         </div>
       </div>
     </footer>

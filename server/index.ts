@@ -1,11 +1,7 @@
 import express from 'express';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import { createServer as createViteServer } from 'vite';
 import { apiRouter } from './routes/api';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 async function startServer() {
   const app = express();
@@ -17,7 +13,7 @@ async function startServer() {
   app.get('/health', (_req, res) => {
     res.json({
       status: 'ok',
-      app: 'BourseClair',
+      app: 'Bourse Facile',
       provider: process.env.BRVM_DATA_PROVIDER || 'demo',
       environment: process.env.NODE_ENV || 'development',
       timestamp: new Date().toISOString(),
@@ -43,7 +39,7 @@ async function startServer() {
   }
 
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`[BourseClair] Serveur actif sur http://0.0.0.0:${PORT}`);
+    console.log(`[Bourse Facile] Serveur actif sur http://0.0.0.0:${PORT}`);
   });
 }
 

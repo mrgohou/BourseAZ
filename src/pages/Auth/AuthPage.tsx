@@ -122,7 +122,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onNavigate }) => {
   return (
     <div className="max-w-md mx-auto my-8 pb-12 space-y-6">
       <div className="text-center space-y-2">
-        <h1 className="text-2xl font-black text-slate-900">Espace Connexion BourseClair</h1>
+        <h1 className="text-2xl font-black text-slate-900">Espace Connexion Bourse Facile</h1>
         <p className="text-xs text-slate-500">
           Accédez à vos simulations sauvegardées, vos analyses et votre progression d'apprentissage.
         </p>
