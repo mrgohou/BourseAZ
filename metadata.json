@@ -1,0 +1,6 @@
+{
+  "name": "BourseClair",
+  "description": "Application web pédagogique d'analyse et de simulation boursière pour la BRVM",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
