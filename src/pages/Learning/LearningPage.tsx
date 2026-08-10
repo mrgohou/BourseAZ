@@ -6,7 +6,8 @@ import { Button } from '../../components/ui/Button';
 import { useAuth } from '../../features/auth/AuthContext';
 import { SGIDirectoryModule } from '../../components/learning/SGIDirectoryModule';
 import { InteractiveGlossary } from '../../components/learning/InteractiveGlossary';
-import { BookOpen, CheckCircle, ArrowRight, Award, Calculator, Clock, HelpCircle, Building2, ShieldCheck, Sparkles } from 'lucide-react';
+import { GuidedPathway } from '../../components/learning/GuidedPathway';
+import { BookOpen, CheckCircle, ArrowRight, Award, Calculator, Clock, HelpCircle, Building2, ShieldCheck, Sparkles, Compass } from 'lucide-react';
 
 interface LearningPageProps {
   onNavigate: (path: string) => void;
@@ -14,7 +15,7 @@ interface LearningPageProps {
 
 export const LearningPage: React.FC<LearningPageProps> = ({ onNavigate }) => {
   const { learningProgress, completeLearningModule } = useAuth();
-  const [activeTab, setActiveTab] = useState<'modules' | 'glossary' | 'sgi'>('modules');
+  const [activeTab, setActiveTab] = useState<'pathway' | 'modules' | 'glossary' | 'sgi'>('pathway');
   const [selectedModule, setSelectedModule] = useState<LearningModule | null>(null);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [quizSubmitted, setQuizSubmitted] = useState(false);
@@ -69,6 +70,21 @@ export const LearningPage: React.FC<LearningPageProps> = ({ onNavigate }) => {
       {/* Module Navigation Tabs */}
       <div className="flex flex-wrap border-b border-slate-200 dark:border-slate-800 gap-3 sm:gap-6">
         <button
+          onClick={() => setActiveTab('pathway')}
+          className={`pb-3 text-sm font-extrabold border-b-2 transition-colors cursor-pointer flex items-center gap-2 ${
+            activeTab === 'pathway'
+              ? 'border-emerald-600 text-emerald-700 dark:border-emerald-500 dark:text-emerald-400'
+              : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+          }`}
+        >
+          <Compass className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+          Parcours Guidé Débutant
+          <span className="text-[10px] bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-extrabold px-2 py-0.5 rounded-full">
+            Pas à Pas
+          </span>
+        </button>
+
+        <button
           onClick={() => setActiveTab('modules')}
           className={`pb-3 text-sm font-extrabold border-b-2 transition-colors cursor-pointer flex items-center gap-2 ${
             activeTab === 'modules'
@@ -89,10 +105,7 @@ export const LearningPage: React.FC<LearningPageProps> = ({ onNavigate }) => {
           }`}
         >
           <Sparkles className="w-4 h-4 text-amber-500" />
-          Glossaire Boursier Interactif
-          <span className="text-[10px] bg-indigo-100 dark:bg-indigo-950 text-indigo-800 dark:text-indigo-300 font-extrabold px-2 py-0.5 rounded-full">
-            Dictionnaire
-          </span>
+          Glossaire Boursier
         </button>
 
         <button
@@ -104,12 +117,14 @@ export const LearningPage: React.FC<LearningPageProps> = ({ onNavigate }) => {
           }`}
         >
           <ShieldCheck className="w-4 h-4 text-emerald-600" />
-          SGI Agréées & Choix de Courtier
-          <span className="text-[10px] bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-extrabold px-2 py-0.5 rounded-full">
-            Annuaire
-          </span>
+          Annuaire SGI
         </button>
       </div>
+
+      {/* PARCOURS GUIDÉ TAB */}
+      {activeTab === 'pathway' && (
+        <GuidedPathway onNavigate={onNavigate} />
+      )}
 
       {/* INTERACTIVE GLOSSARY TAB */}
       {activeTab === 'glossary' && (

@@ -16,6 +16,7 @@ import { AuthPage } from './pages/Auth/AuthPage';
 import { AccountPage } from './pages/Account/AccountPage';
 import { AdminPage } from './pages/Admin/AdminPage';
 import { PrivacyPolicyPage } from './pages/Privacy/PrivacyPolicyPage';
+import { SgiDirectoryPage } from './pages/SGI/SgiDirectoryPage';
 import { PriceAlertsManager } from './components/alerts/PriceAlertsManager';
 
 export default function App() {
@@ -57,7 +58,7 @@ export default function App() {
     }
 
     if (pathOnly === '/simulation') {
-      const symbol = queryParams.get('symbol') || 'SNTS';
+      const symbol = queryParams.get('symbol') || undefined;
       return <SimulationPage initialSymbol={symbol} onNavigate={navigate} />;
     }
 
@@ -67,7 +68,7 @@ export default function App() {
     }
 
     if (pathOnly === '/comparison') {
-      const symbol = queryParams.get('symbol') || 'SNTS';
+      const symbol = queryParams.get('symbol') || undefined;
       return <ComparisonPage initialSymbol={symbol} onNavigate={navigate} />;
     }
 
@@ -89,6 +90,10 @@ export default function App() {
 
     if (pathOnly === '/privacy') {
       return <PrivacyPolicyPage onNavigate={navigate} />;
+    }
+
+    if (pathOnly === '/sgi') {
+      return <SgiDirectoryPage onNavigate={navigate} />;
     }
 
     // Default Fallback Page

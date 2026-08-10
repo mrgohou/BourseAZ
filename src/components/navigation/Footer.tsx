@@ -54,9 +54,9 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               <div>
                 <button
                   onClick={() => onNavigate('/privacy')}
-                  className="text-indigo-400 hover:text-indigo-300 font-medium transition-colors cursor-pointer inline-flex items-center gap-1"
+                  className="text-emerald-400 hover:text-emerald-300 font-medium transition-colors cursor-pointer inline-flex items-center gap-1"
                 >
-                  <ShieldCheck className="w-3.5 h-3.5 text-indigo-400" />
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
                   Politique de confidentialité
                 </button>
               </div>

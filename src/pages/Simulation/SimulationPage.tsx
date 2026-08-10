@@ -17,12 +17,17 @@ interface SimulationPageProps {
   onNavigate: (path: string) => void;
 }
 
-export const SimulationPage: React.FC<SimulationPageProps> = ({ initialSymbol = 'SNTS', onNavigate }) => {
+export const SimulationPage: React.FC<SimulationPageProps> = ({ initialSymbol, onNavigate }) => {
   const { saveSimulation, savedSimulations } = useAuth();
   const [activeTab, setActiveTab] = useState<'plan' | 'compound' | 'quick' | 'advanced'>('plan');
 
   // Quick Simulation state
-  const [selectedSymbol, setSelectedSymbol] = useState(initialSymbol);
+  const [selectedSymbol, setSelectedSymbol] = useState<string | undefined>(initialSymbol);
+
+  useEffect(() => {
+    setSelectedSymbol(initialSymbol);
+  }, [initialSymbol]);
+
   const [initialAmount, setInitialAmount] = useState<number>(250000); // Default 250,000 FCFA
   const [period, setPeriod] = useState<'1M' | '3M' | '6M' | '1Y' | '3Y'>('1Y');
   const [dividendMode, setDividendMode] = useState<DividendMode>('REINVEST');
@@ -37,11 +42,16 @@ export const SimulationPage: React.FC<SimulationPageProps> = ({ initialSymbol = 
     { type: 'BUY', date: '2025-06-20', quantity: 5, price: 16000, fees: 500, notes: 'Achat complémentaire' },
   ]);
 
-  const selectedCompany = DEMO_COMPANIES.find(c => c.symbol === selectedSymbol) || DEMO_COMPANIES[0];
+  const activeSymbol = selectedSymbol || 'SNTS';
+  const selectedCompany = DEMO_COMPANIES.find(c => c.symbol === activeSymbol) || DEMO_COMPANIES[0];
 
   // Run Quick Simulation automatically or on change
   const handleRunQuickSimulation = () => {
     setErrorMsg(null);
+    if (!selectedSymbol) {
+      setSimulationResult(null);
+      return;
+    }
     if (!initialAmount || initialAmount < 5000) {
       setErrorMsg('Veuillez saisir un montant valide d’au moins 5 000 FCFA.');
       setSimulationResult(null);
@@ -116,12 +126,12 @@ export const SimulationPage: React.FC<SimulationPageProps> = ({ initialSymbol = 
       </div>
 
       {/* Simulator Mode Tabs */}
-      <div className="flex flex-wrap border-b border-slate-200 gap-2 sm:gap-6">
+      <div className="flex flex-wrap border-b border-slate-200 dark:border-slate-800 gap-2 sm:gap-6">
         <button
           onClick={() => setActiveTab('plan')}
           className={`pb-3 text-sm font-extrabold border-b-2 transition-colors cursor-pointer flex items-center gap-2 ${
             activeTab === 'plan'
-              ? 'border-blue-700 text-blue-700 dark:border-blue-500 dark:text-blue-400'
+              ? 'border-emerald-600 text-emerald-700 dark:border-emerald-500 dark:text-emerald-400'
               : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
           }`}
         >
@@ -136,7 +146,7 @@ export const SimulationPage: React.FC<SimulationPageProps> = ({ initialSymbol = 
           onClick={() => setActiveTab('compound')}
           className={`pb-3 text-sm font-extrabold border-b-2 transition-colors cursor-pointer flex items-center gap-2 ${
             activeTab === 'compound'
-              ? 'border-blue-700 text-blue-700 dark:border-blue-500 dark:text-blue-400'
+              ? 'border-emerald-600 text-emerald-700 dark:border-emerald-500 dark:text-emerald-400'
               : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
           }`}
         >
@@ -151,8 +161,8 @@ export const SimulationPage: React.FC<SimulationPageProps> = ({ initialSymbol = 
           onClick={() => setActiveTab('quick')}
           className={`pb-3 text-sm font-extrabold border-b-2 transition-colors cursor-pointer ${
             activeTab === 'quick'
-              ? 'border-blue-700 text-blue-700'
-              : 'border-transparent text-slate-500 hover:text-slate-800'
+              ? 'border-emerald-600 text-emerald-700 dark:border-emerald-500 dark:text-emerald-400'
+              : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
           }`}
         >
           Simulation Historique Rapide
@@ -162,8 +172,8 @@ export const SimulationPage: React.FC<SimulationPageProps> = ({ initialSymbol = 
           onClick={() => setActiveTab('advanced')}
           className={`pb-3 text-sm font-extrabold border-b-2 transition-colors cursor-pointer ${
             activeTab === 'advanced'
-              ? 'border-blue-700 text-blue-700'
-              : 'border-transparent text-slate-500 hover:text-slate-800'
+              ? 'border-emerald-600 text-emerald-700 dark:border-emerald-500 dark:text-emerald-400'
+              : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
           }`}
         >
           Simulation Multi-Opérations

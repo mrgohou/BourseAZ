@@ -11,54 +11,54 @@ export const FreshnessBadge: React.FC<FreshnessBadgeProps> = ({ freshness, class
 
   let config = {
     label: 'Données DEMO',
-    bg: 'bg-amber-50 dark:bg-amber-950/60',
-    text: 'text-amber-800 dark:text-amber-300',
-    border: 'border-amber-300 dark:border-amber-800',
+    bg: 'bg-amber-50 dark:bg-amber-950/70',
+    text: 'text-amber-900 dark:text-amber-200',
+    border: 'border-amber-400 dark:border-amber-600',
   };
 
   if (normKey === 'real_time' || normKey === 'realtime') {
     config = {
       label: 'Temps Réel BRVM',
-      bg: 'bg-emerald-50 dark:bg-emerald-950/60',
-      text: 'text-emerald-800 dark:text-emerald-300',
-      border: 'border-emerald-300 dark:border-emerald-800',
+      bg: 'bg-emerald-50 dark:bg-emerald-950/70',
+      text: 'text-emerald-900 dark:text-emerald-200',
+      border: 'border-emerald-400 dark:border-emerald-600',
     };
   } else if (normKey === 'delayed') {
     config = {
       label: 'Cours Différé (15 min)',
-      bg: 'bg-sky-50 dark:bg-sky-950/60',
-      text: 'text-sky-800 dark:text-sky-300',
-      border: 'border-sky-300 dark:border-sky-800',
+      bg: 'bg-sky-50 dark:bg-sky-950/70',
+      text: 'text-sky-900 dark:text-sky-200',
+      border: 'border-sky-400 dark:border-sky-600',
     };
   } else if (normKey === 'end_of_day' || normKey === 'endofday') {
     config = {
       label: 'Fin de Séance',
-      bg: 'bg-indigo-50 dark:bg-indigo-950/60',
-      text: 'text-indigo-800 dark:text-indigo-300',
-      border: 'border-indigo-300 dark:border-indigo-800',
+      bg: 'bg-indigo-50 dark:bg-indigo-950/70',
+      text: 'text-indigo-900 dark:text-indigo-200',
+      border: 'border-indigo-400 dark:border-indigo-600',
     };
   } else if (normKey === 'historical') {
     config = {
       label: 'Historique Officiel',
       bg: 'bg-slate-100 dark:bg-slate-800',
-      text: 'text-slate-800 dark:text-slate-200',
-      border: 'border-slate-300 dark:border-slate-700',
+      text: 'text-slate-900 dark:text-slate-100',
+      border: 'border-slate-400 dark:border-slate-600',
     };
   } else if (normKey === 'manual') {
     config = {
       label: 'Saisie / Fichier Officiel',
-      bg: 'bg-purple-50 dark:bg-purple-950/60',
-      text: 'text-purple-800 dark:text-purple-300',
-      border: 'border-purple-300 dark:border-purple-800',
+      bg: 'bg-purple-50 dark:bg-purple-950/70',
+      text: 'text-purple-900 dark:text-purple-200',
+      border: 'border-purple-400 dark:border-purple-600',
     };
   }
 
   return (
     <span
-      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${config.bg} ${config.text} ${config.border} ${className}`}
+      className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold border ${config.bg} ${config.text} ${config.border} shadow-2xs ${className}`}
     >
-      <span className="w-1.5 h-1.5 rounded-full bg-current mr-1.5 animate-pulse" />
-      {config.label}
+      <span className="w-1.5 h-1.5 rounded-full bg-current mr-1.5 animate-pulse shrink-0" />
+      <span className="whitespace-nowrap">{config.label}</span>
     </span>
   );
 };

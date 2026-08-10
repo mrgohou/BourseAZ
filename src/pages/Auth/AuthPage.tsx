@@ -160,15 +160,13 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onNavigate }) => {
             </button>
 
             {/* Phone OTP button */}
-            {featureFlags.FEATURE_PHONE_AUTH && (
-              <button
-                onClick={() => setMode('PHONE')}
-                className="w-full p-3.5 rounded-2xl bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-bold flex items-center justify-center gap-3 transition-colors cursor-pointer shadow-md"
-              >
-                <Phone className="w-5 h-5" />
-                Connexion Téléphone / SMS (OTP)
-              </button>
-            )}
+            <button
+              onClick={() => setMode('PHONE')}
+              className="w-full p-3.5 rounded-2xl bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-bold flex items-center justify-center gap-3 transition-colors cursor-pointer shadow-md"
+            >
+              <Phone className="w-5 h-5" />
+              Connexion Téléphone / SMS (OTP)
+            </button>
           </div>
         )}
 

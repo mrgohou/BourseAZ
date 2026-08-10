@@ -22,11 +22,11 @@ export const Button: React.FC<ButtonProps> = ({
   };
 
   const variantStyles = {
-    primary: 'bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500 shadow-sm shadow-indigo-200/50',
-    secondary: 'bg-emerald-600 text-white hover:bg-emerald-700 focus:ring-emerald-500 shadow-sm shadow-emerald-200/50',
-    outline: 'border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 focus:ring-indigo-500 shadow-2xs',
+    primary: 'bg-emerald-600 text-white hover:bg-emerald-700 focus:ring-emerald-500 shadow-xs shadow-emerald-200/50 dark:shadow-none',
+    secondary: 'bg-slate-900 dark:bg-emerald-950 text-white hover:bg-slate-800 dark:hover:bg-emerald-900 focus:ring-slate-500 shadow-xs',
+    outline: 'border border-emerald-200 dark:border-emerald-800/60 text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-900 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/50 focus:ring-emerald-500 shadow-2xs',
     danger: 'bg-rose-600 text-white hover:bg-rose-700 focus:ring-rose-500 shadow-sm',
-    ghost: 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 focus:ring-slate-300',
+    ghost: 'text-slate-600 dark:text-slate-300 hover:bg-emerald-100/60 dark:hover:bg-emerald-950/60 hover:text-slate-900 dark:hover:text-white focus:ring-emerald-300',
   };
 
   return (

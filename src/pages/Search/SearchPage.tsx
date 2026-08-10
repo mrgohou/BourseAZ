@@ -108,7 +108,7 @@ export const SearchPage: React.FC<SearchPageProps> = ({ initialQuery = '', onNav
               placeholder="Rechercher par nom ou symbole (ex: Sonatel, SNTS, Banque)..."
               value={query}
               onChange={e => setQuery(e.target.value)}
-              className="w-full pl-11 pr-4 py-2.5 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl outline-none focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-800 transition-all font-medium"
+              className="w-full pl-11 pr-4 py-2.5 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl outline-none focus:border-emerald-500 focus:bg-white dark:focus:bg-slate-800 transition-all font-medium"
             />
           </div>
 
@@ -118,7 +118,7 @@ export const SearchPage: React.FC<SearchPageProps> = ({ initialQuery = '', onNav
               <select
                 value={selectedSector}
                 onChange={e => setSelectedSector(e.target.value)}
-                className="w-full pl-9 pr-8 py-2.5 text-xs font-semibold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl outline-none focus:border-indigo-500 appearance-none cursor-pointer"
+                className="w-full pl-9 pr-8 py-2.5 text-xs font-semibold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl outline-none focus:border-emerald-500 appearance-none cursor-pointer"
               >
                 <option value="ALL">Tous les secteurs ({companies.length})</option>
                 {sectors.map(sec => (
@@ -147,13 +147,13 @@ export const SearchPage: React.FC<SearchPageProps> = ({ initialQuery = '', onNav
         <span>{filteredCompanies.length} entreprise(s) trouvée(s)</span>
         <div className="flex items-center gap-3">
           <span className="flex items-center gap-1">
-            <Database className="w-3.5 h-3.5 text-indigo-500" />
+            <Database className="w-3.5 h-3.5 text-emerald-500" />
             Source: <strong className="uppercase text-slate-700 dark:text-slate-300">{provider}</strong>
           </span>
           <button
             onClick={() => loadCompanies(true)}
             disabled={isRefreshing}
-            className="flex items-center gap-1 text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer font-bold"
+            className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer font-bold"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
             {isRefreshing ? 'Actualisation...' : 'Actualiser les cotes'}

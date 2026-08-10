@@ -18,12 +18,46 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate }) => {
   const activeAlertsCount = priceAlerts.filter(a => a.active).length;
 
   const navLinks = [
-    { label: 'Accueil', path: '/', icon: TrendingUp },
-    { label: 'Rechercher', path: '/search', icon: Search },
-    { label: 'Simuler', path: '/simulation', icon: Calculator },
-    { label: 'Alertes', path: '/alerts', icon: Bell, badge: activeAlertsCount },
-    { label: 'Comparer', path: '/comparison', icon: BarChart3 },
-    { label: 'Apprendre', path: '/learning', icon: BookOpen },
+    {
+      label: 'Accueil',
+      path: '/',
+      icon: TrendingUp,
+      activeClass: 'bg-emerald-100/90 dark:bg-emerald-950/90 text-emerald-900 dark:text-emerald-200 border-emerald-300/80 dark:border-emerald-800/80 shadow-2xs font-bold',
+      iconClass: 'text-emerald-600 dark:text-emerald-400',
+      hoverClass: 'hover:bg-emerald-50/80 dark:hover:bg-emerald-950/40 hover:text-emerald-800 dark:hover:text-emerald-300',
+    },
+    {
+      label: 'Comparer',
+      path: '/comparison',
+      icon: BarChart3,
+      activeClass: 'bg-indigo-100/90 dark:bg-indigo-950/90 text-indigo-900 dark:text-indigo-200 border-indigo-300/80 dark:border-indigo-800/80 shadow-2xs font-bold',
+      iconClass: 'text-indigo-600 dark:text-indigo-400',
+      hoverClass: 'hover:bg-indigo-50/80 dark:hover:bg-indigo-950/40 hover:text-indigo-800 dark:hover:text-indigo-300',
+    },
+    {
+      label: 'Simuler',
+      path: '/simulation',
+      icon: Calculator,
+      activeClass: 'bg-amber-100/90 dark:bg-amber-950/90 text-amber-950 dark:text-amber-200 border-amber-300/80 dark:border-amber-800/80 shadow-2xs font-bold',
+      iconClass: 'text-amber-600 dark:text-amber-400',
+      hoverClass: 'hover:bg-amber-50/80 dark:hover:bg-amber-950/40 hover:text-amber-800 dark:hover:text-amber-300',
+    },
+    {
+      label: 'Apprendre',
+      path: '/learning',
+      icon: BookOpen,
+      activeClass: 'bg-purple-100/90 dark:bg-purple-950/90 text-purple-950 dark:text-purple-200 border-purple-300/80 dark:border-purple-800/80 shadow-2xs font-bold',
+      iconClass: 'text-purple-600 dark:text-purple-400',
+      hoverClass: 'hover:bg-purple-50/80 dark:hover:bg-purple-950/40 hover:text-purple-800 dark:hover:text-purple-300',
+    },
+    {
+      label: 'Rechercher',
+      path: '/search',
+      icon: Search,
+      activeClass: 'bg-sky-100/90 dark:bg-sky-950/90 text-sky-950 dark:text-sky-200 border-sky-300/80 dark:border-sky-800/80 shadow-2xs font-bold',
+      iconClass: 'text-sky-600 dark:text-sky-400',
+      hoverClass: 'hover:bg-sky-50/80 dark:hover:bg-sky-950/40 hover:text-sky-800 dark:hover:text-sky-300',
+    },
   ];
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -43,15 +77,15 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate }) => {
           onClick={() => onNavigate('/')}
           className="flex items-center gap-3 cursor-pointer group shrink-0"
         >
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-600 to-blue-500 flex items-center justify-center text-white shadow-md shadow-indigo-100 dark:shadow-indigo-900/20 group-hover:scale-105 transition-transform">
+          <div className="w-9 h-9 rounded-xl bg-emerald-600 flex items-center justify-center text-white shadow-md shadow-emerald-200/60 dark:shadow-none group-hover:scale-105 transition-transform">
             <TrendingUp className="w-5 h-5 stroke-[2.5]" />
           </div>
           <div>
-            <span className="text-xl font-bold tracking-tight text-slate-800 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+            <span className="text-xl font-bold tracking-tight text-slate-800 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
               Bourse Facile
             </span>
-            <span className="block text-[10px] font-extrabold uppercase tracking-widest text-indigo-600 dark:text-indigo-400 -mt-0.5">
-              Nexus BRVM
+            <span className="block text-[10px] font-extrabold uppercase tracking-widest text-emerald-600 dark:text-emerald-400 -mt-0.5">
+              Savoir Investir
             </span>
           </div>
         </div>
@@ -64,7 +98,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate }) => {
             placeholder="Rechercher une action (ex: SNTS, Solibra)..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 text-xs bg-slate-100/90 hover:bg-slate-100 dark:bg-slate-800/80 dark:hover:bg-slate-800 dark:text-white border border-transparent focus:border-indigo-400 rounded-full outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
+            className="w-full pl-10 pr-4 py-2 text-xs bg-slate-100/90 hover:bg-slate-100 dark:bg-slate-800/80 dark:hover:bg-slate-800 dark:text-white border border-transparent focus:border-emerald-500 rounded-full outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
           />
         </form>
 
@@ -77,19 +111,14 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate }) => {
               <button
                 key={link.path}
                 onClick={() => onNavigate(link.path)}
-                className={`px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer relative ${
+                className={`px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer relative border ${
                   isActive
-                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold shadow-2xs'
-                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                    ? link.activeClass
+                    : `border-transparent text-slate-500 dark:text-slate-400 ${link.hoverClass}`
                 }`}
               >
-                <Icon className="w-4 h-4" />
+                <Icon className={`w-4 h-4 ${isActive ? link.iconClass : 'text-slate-400 dark:text-slate-500'}`} />
                 {link.label}
-                {link.badge !== undefined && link.badge > 0 && (
-                  <span className="w-4 h-4 rounded-full bg-amber-500 text-slate-950 font-black text-[9px] flex items-center justify-center">
-                    {link.badge}
-                  </span>
-                )}
               </button>
             );
           })}
@@ -109,20 +138,6 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate }) => {
             ) : (
               <Moon className="w-4 h-4 text-slate-700" />
             )}
-          </button>
-
-          {/* Admin Toggle Shortcut */}
-          <button
-            onClick={toggleAdminMode}
-            title={isAdmin ? 'Désactiver le mode Admin' : 'Activer le mode Admin'}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer ${
-              isAdmin
-                ? 'bg-purple-100 dark:bg-purple-950/80 text-purple-800 dark:text-purple-300 border border-purple-200 dark:border-purple-800'
-                : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
-            }`}
-          >
-            <Shield className="w-3.5 h-3.5" />
-            {isAdmin ? 'Admin ON' : 'Admin Test'}
           </button>
 
           {isAdmin && (
@@ -199,6 +214,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate }) => {
           <div className="space-y-1">
             {navLinks.map(link => {
               const Icon = link.icon;
+              const isActive = currentPath === link.path || (link.path !== '/' && currentPath.startsWith(link.path));
               return (
                 <button
                   key={link.path}
@@ -206,9 +222,13 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate }) => {
                     onNavigate(link.path);
                     setMobileMenuOpen(false);
                   }}
-                  className="w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium flex items-center gap-3 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  className={`w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-3 transition-colors border ${
+                    isActive
+                      ? link.activeClass
+                      : `border-transparent text-slate-700 dark:text-slate-200 ${link.hoverClass}`
+                  }`}
                 >
-                  <Icon className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                  <Icon className={`w-5 h-5 ${isActive ? link.iconClass : 'text-slate-400 dark:text-slate-500'}`} />
                   {link.label}
                 </button>
               );
@@ -216,14 +236,6 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate }) => {
           </div>
 
           <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-            <button
-              onClick={toggleAdminMode}
-              className="text-xs font-bold text-purple-700 dark:text-purple-400 flex items-center gap-1"
-            >
-              <Shield className="w-4 h-4" />
-              Mode Admin ({isAdmin ? 'Actif' : 'Inactif'})
-            </button>
-
             {isAuthenticated ? (
               <Button size="sm" variant="ghost" onClick={() => onNavigate('/account')}>
                 Mon Compte

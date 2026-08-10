@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { DEMO_COMPANIES } from '../../data/demo-data';
 import { Company } from '../../types';
 import { formatFCFA, formatPercent } from '../../lib/formatters';
@@ -37,11 +37,16 @@ interface InvestmentPlanModuleProps {
 }
 
 export const InvestmentPlanModule: React.FC<InvestmentPlanModuleProps> = ({
-  initialSymbol = 'SNTS',
+  initialSymbol,
   onNavigate,
 }) => {
   const { saveSimulation } = useAuth();
-  const [selectedSymbol, setSelectedSymbol] = useState(initialSymbol);
+  const [selectedSymbol, setSelectedSymbol] = useState<string | undefined>(initialSymbol);
+
+  useEffect(() => {
+    setSelectedSymbol(initialSymbol);
+  }, [initialSymbol]);
+
   const [strategy, setStrategy] = useState<'DCA' | 'DRIP' | 'TARGET'>('DCA');
   const [monthlyContribution, setMonthlyContribution] = useState<number>(30000); // 30,000 FCFA/month
   const [horizonYears, setHorizonYears] = useState<number>(5); // 5 years
@@ -49,12 +54,14 @@ export const InvestmentPlanModule: React.FC<InvestmentPlanModuleProps> = ({
   const [targetGoalAmount, setTargetGoalAmount] = useState<number>(5000000); // 5M FCFA for target mode
   const [savedSuccess, setSavedSuccess] = useState(false);
 
-  const selectedCompany: Company = useMemo(() => {
-    return DEMO_COMPANIES.find(c => c.symbol === selectedSymbol) || DEMO_COMPANIES[0];
+  const selectedCompany: Company | undefined = useMemo(() => {
+    if (!selectedSymbol) return undefined;
+    return DEMO_COMPANIES.find(c => c.symbol === selectedSymbol);
   }, [selectedSymbol]);
 
   // Estimate annual dividend yield for chosen company
   const dividendYieldPercent = useMemo(() => {
+    if (!selectedCompany) return 6.5;
     if (selectedCompany.dividendYield) return selectedCompany.dividendYield;
     if (selectedCompany.lastDividend && selectedCompany.currentPrice > 0) {
       return (selectedCompany.lastDividend / selectedCompany.currentPrice) * 100;
@@ -73,14 +80,14 @@ export const InvestmentPlanModule: React.FC<InvestmentPlanModuleProps> = ({
 
     if (monthlyRate === 0) return Math.round(targetGoalAmount / totalMonths);
 
-    // Future Value of Annuity Formula: FV = PMT * (((1 + r)^n - 1) / r)
-    // PMT = FV / (((1 + r)^n - 1) / r)
     const pmt = targetGoalAmount / (((Math.pow(1 + monthlyRate, totalMonths) - 1)) / monthlyRate);
     return Math.max(5000, Math.round(pmt));
   }, [strategy, targetGoalAmount, horizonYears, monthlyContribution, annualGrowthRate, dividendYieldPercent]);
 
   // Calculate year-by-year projections
   const projectionResults = useMemo(() => {
+    if (!selectedCompany) return null;
+
     const yearsData = [];
     const sharePrice = selectedCompany.currentPrice || 10000;
     const annualDivPerShare = selectedCompany.lastDividend || Math.round(sharePrice * (dividendYieldPercent / 100));
@@ -91,17 +98,13 @@ export const InvestmentPlanModule: React.FC<InvestmentPlanModuleProps> = ({
     let currentSharePrice = sharePrice;
 
     const monthlyReturnRate = Math.pow(1 + annualGrowthRate / 100, 1 / 12) - 1;
-    const divYieldDecimal = dividendYieldPercent / 100;
 
     for (let yr = 1; yr <= horizonYears; yr++) {
       let yearlyOutofPocket = 0;
       let yearlyDividendsEarned = 0;
 
       for (let m = 1; m <= 12; m++) {
-        // Monthly share price growth
         currentSharePrice *= (1 + monthlyReturnRate);
-
-        // Buy shares with monthly contribution
         yearlyOutofPocket += effectiveMonthlyContribution;
         totalInvestedOutofPocket += effectiveMonthlyContribution;
 
@@ -109,12 +112,10 @@ export const InvestmentPlanModule: React.FC<InvestmentPlanModuleProps> = ({
         accumulatedShares += newSharesFromContribution;
       }
 
-      // Annual Dividend payout (BRVM companies pay dividends once a year around May-July)
       const annualDivPayout = accumulatedShares * (annualDivPerShare * Math.pow(1 + annualGrowthRate / 100, yr - 1));
       yearlyDividendsEarned = annualDivPayout;
       cumulativeDividends += yearlyDividendsEarned;
 
-      // If strategy is DRIP or DCA with reinvestment, reinvest all dividends to buy extra shares
       if (strategy === 'DRIP' || strategy === 'DCA') {
         const bonusSharesFromDivs = yearlyDividendsEarned / currentSharePrice;
         accumulatedShares += bonusSharesFromDivs;
@@ -137,8 +138,6 @@ export const InvestmentPlanModule: React.FC<InvestmentPlanModuleProps> = ({
     }
 
     const finalYear = yearsData[yearsData.length - 1];
-
-    // Execution roadmap details
     const sharesToBuyMonthly = Math.max(1, Math.round(effectiveMonthlyContribution / sharePrice));
     const monthlyCostEstimate = sharesToBuyMonthly * sharePrice;
 
@@ -161,7 +160,7 @@ export const InvestmentPlanModule: React.FC<InvestmentPlanModuleProps> = ({
   ]);
 
   const handleSavePlan = () => {
-    if (!projectionResults.finalYear) return;
+    if (!selectedCompany || !projectionResults || !projectionResults.finalYear) return;
     const resultToSave = {
       id: `plan-${Date.now()}`,
       symbol: selectedCompany.symbol,
@@ -193,11 +192,12 @@ export const InvestmentPlanModule: React.FC<InvestmentPlanModuleProps> = ({
   };
 
   const handleExportPDF = () => {
+    if (!selectedCompany || !projectionResults || !projectionResults.finalYear) return;
     const doc = new jsPDF();
     const final = projectionResults.finalYear;
 
     doc.setFontSize(18);
-    doc.setTextColor(30, 58, 138); // Deep blue
+    doc.setTextColor(30, 58, 138);
     doc.text(`Plan d'Investissement BourseClair - ${selectedCompany.name}`, 14, 20);
 
     doc.setFontSize(11);
@@ -239,6 +239,7 @@ export const InvestmentPlanModule: React.FC<InvestmentPlanModuleProps> = ({
   };
 
   const handleExportCSV = () => {
+    if (!selectedCompany || !projectionResults) return;
     let csv = "Annee,Capital_Investi_FCFA,Valeur_Portefeuille_FCFA,Dividendes_Cumules_FCFA,Plus_Value_FCFA,Nombre_Actions,Rente_Annuelle_FCFA\n";
     projectionResults.yearsData.forEach(row => {
       csv += `${row.yearNumber},${row.totalInvested},${row.portfolioValue},${row.cumulativeDividends},${row.netGain},${row.accumulatedShares},${row.projectedAnnualPassiveIncome}\n`;
@@ -257,26 +258,32 @@ export const InvestmentPlanModule: React.FC<InvestmentPlanModuleProps> = ({
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Top Banner Hero */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-blue-900 via-indigo-900 to-slate-950 text-white shadow-xl border border-blue-800/40 space-y-4">
+      <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-emerald-950 via-slate-900 to-teal-950 text-white shadow-xl border border-emerald-900/40 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="space-y-1">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 text-xs font-black uppercase tracking-wider">
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-black uppercase tracking-wider">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
               Plan d'Épargne & d'Investissement Programmé BRVM
             </div>
             <h2 className="text-xl sm:text-3xl font-black">
-              Construire un Patrimoine Boursier sur {selectedCompany.name} ({selectedCompany.symbol})
+              {selectedCompany
+                ? `Construire un Patrimoine Boursier sur ${selectedCompany.name} (${selectedCompany.symbol})`
+                : "Construire un Patrimoine Boursier sur la BRVM"}
             </h2>
-            <p className="text-xs sm:text-sm text-blue-200 max-w-2xl font-medium">
-              Simulez la puissance de l'accumulation progressive (DCA) et de l'effet boule de neige des dividendes composés sur la BRVM.
+            <p className="text-xs sm:text-sm text-emerald-100/80 max-w-2xl font-medium">
+              {selectedCompany
+                ? "Simulez la puissance de l'accumulation progressive (DCA) et de l'effet boule de neige des dividendes composés sur la BRVM."
+                : "Sélectionnez une entreprise ci-dessous pour simuler votre plan d'épargne et d'investissement sur la BRVM."}
             </p>
           </div>
 
           <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/10 text-right min-w-[180px]">
-            <span className="text-[10px] uppercase font-bold text-blue-300 block">Cours Actuel & Rendement</span>
-            <div className="text-xl font-black text-white mt-0.5">{formatFCFA(selectedCompany.currentPrice)}</div>
+            <span className="text-[10px] uppercase font-bold text-emerald-200 block">Cours Actuel & Rendement</span>
+            <div className="text-xl font-black text-white mt-0.5">
+              {selectedCompany ? formatFCFA(selectedCompany.currentPrice) : '-- FCFA'}
+            </div>
             <div className="text-xs font-bold text-emerald-400 mt-0.5">
-              Rendement Div. ~{dividendYieldPercent.toFixed(1)}% / an
+              {selectedCompany ? `Rendement Div. ~${dividendYieldPercent.toFixed(1)}% / an` : 'Sélectionner une action'}
             </div>
           </div>
         </div>
@@ -285,22 +292,23 @@ export const InvestmentPlanModule: React.FC<InvestmentPlanModuleProps> = ({
       {/* Main Grid: Controls vs Live Simulation Output */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Left Column: Form Controls */}
-        <div className="lg:col-span-5 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs space-y-6">
-          <h3 className="font-bold text-slate-900 text-base border-b border-slate-100 pb-3 flex items-center gap-2">
-            <Target className="w-5 h-5 text-blue-700" />
+        <div className="lg:col-span-5 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-2xs space-y-6">
+          <h3 className="font-bold text-slate-900 dark:text-white text-base border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center gap-2">
+            <Target className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
             Configuration du Plan d'Investissement
           </h3>
 
           {/* 1. Select Action */}
           <div className="space-y-1.5">
-            <label className="text-xs font-extrabold uppercase tracking-wider text-slate-600 block">
+            <label className="text-xs font-extrabold uppercase tracking-wider text-slate-600 dark:text-slate-400 block">
               1. Choisir l'action ciblée
             </label>
             <select
-              value={selectedSymbol}
-              onChange={e => setSelectedSymbol(e.target.value)}
-              className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-900 outline-none focus:border-blue-500 cursor-pointer"
+              value={selectedSymbol || ''}
+              onChange={e => setSelectedSymbol(e.target.value || undefined)}
+              className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-900 dark:text-white outline-none focus:border-emerald-500 cursor-pointer"
             >
+              <option value="">-- Choisir une entreprise à simuler --</option>
               {DEMO_COMPANIES.map(comp => (
                 <option key={comp.symbol} value={comp.symbol}>
                   {comp.name} ({comp.symbol}) - {formatFCFA(comp.currentPrice)} ({comp.dividendYield ? `${comp.dividendYield}% div` : 'Agrégé'})
@@ -310,86 +318,124 @@ export const InvestmentPlanModule: React.FC<InvestmentPlanModuleProps> = ({
           </div>
 
           {/* 2. Choose Strategy */}
-          <div className="space-y-2">
-            <label className="text-xs font-extrabold uppercase tracking-wider text-slate-600 block">
+          <div className="space-y-2.5">
+            <label className="text-xs font-extrabold uppercase tracking-wider text-slate-600 dark:text-slate-400 block">
               2. Stratégie d'Investissement
             </label>
             <div className="grid grid-cols-3 gap-2 text-xs">
               <button
                 type="button"
                 onClick={() => setStrategy('DCA')}
-                className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer font-extrabold ${
+                className={`p-3 rounded-xl border text-center transition-all cursor-pointer font-extrabold flex flex-col items-center justify-center gap-1.5 ${
                   strategy === 'DCA'
-                    ? 'bg-blue-50 border-blue-600 text-blue-800 shadow-2xs'
-                    : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                    ? 'bg-emerald-600 text-white border-emerald-600 shadow-md ring-2 ring-emerald-500/30 scale-[1.02]'
+                    : 'bg-slate-100 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700/60 text-slate-400 dark:text-slate-500 opacity-40 hover:opacity-75 grayscale'
                 }`}
               >
-                <Repeat className="w-4 h-4 mx-auto mb-1 text-blue-600" />
-                Versements DCA
+                <Repeat className={`w-4 h-4 ${strategy === 'DCA' ? 'text-white' : 'text-slate-400'}`} />
+                <span>Versements réguliers</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setStrategy('DRIP')}
-                className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer font-extrabold ${
+                className={`p-3 rounded-xl border text-center transition-all cursor-pointer font-extrabold flex flex-col items-center justify-center gap-1.5 ${
                   strategy === 'DRIP'
-                    ? 'bg-blue-50 border-blue-600 text-blue-800 shadow-2xs'
-                    : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                    ? 'bg-emerald-600 text-white border-emerald-600 shadow-md ring-2 ring-emerald-500/30 scale-[1.02]'
+                    : 'bg-slate-100 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700/60 text-slate-400 dark:text-slate-500 opacity-40 hover:opacity-75 grayscale'
                 }`}
               >
-                <Coins className="w-4 h-4 mx-auto mb-1 text-emerald-600" />
-                Boule de Neige
+                <Coins className={`w-4 h-4 ${strategy === 'DRIP' ? 'text-white' : 'text-slate-400'}`} />
+                <span>Boule de neige</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setStrategy('TARGET')}
-                className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer font-extrabold ${
+                className={`p-3 rounded-xl border text-center transition-all cursor-pointer font-extrabold flex flex-col items-center justify-center gap-1.5 ${
                   strategy === 'TARGET'
-                    ? 'bg-blue-50 border-blue-600 text-blue-800 shadow-2xs'
-                    : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                    ? 'bg-emerald-600 text-white border-emerald-600 shadow-md ring-2 ring-emerald-500/30 scale-[1.02]'
+                    : 'bg-slate-100 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700/60 text-slate-400 dark:text-slate-500 opacity-40 hover:opacity-75 grayscale'
                 }`}
               >
-                <Target className="w-4 h-4 mx-auto mb-1 text-purple-600" />
-                Objectif Cible
+                <Target className={`w-4 h-4 ${strategy === 'TARGET' ? 'text-white' : 'text-slate-400'}`} />
+                <span>Objectif Cible</span>
               </button>
+            </div>
+
+            {/* Strategy Description Box in Simple Terms */}
+            <div className="p-3.5 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/80 text-xs text-emerald-950 dark:text-emerald-200 space-y-1.5 transition-all">
+              <div className="font-extrabold flex items-center gap-1.5 text-emerald-800 dark:text-emerald-300">
+                <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                <span>
+                  {strategy === 'DCA' && 'Mode : Versements réguliers'}
+                  {strategy === 'DRIP' && 'Mode : Boule de neige (Dividendes réinvestis)'}
+                  {strategy === 'TARGET' && 'Mode : Objectif Cible'}
+                </span>
+              </div>
+              <p className="text-[11px] leading-relaxed text-slate-700 dark:text-slate-300 font-medium">
+                {strategy === 'DCA' && "💡 Vous investissez une somme fixe de votre choix chaque mois (ex: 30 000 FCFA). C'est la méthode la plus simple et sereine pour accumuler des actions progressivement sans vous soucier des variations quotidiennes de la bourse."}
+                {strategy === 'DRIP' && "💡 En plus de vos versements mensuels, tous les dividendes en cash versés chaque année par l'entreprise sont automatiquement réinvestis pour acheter de nouvelles actions. Votre capital grossit ainsi de plus en plus vite."}
+                {strategy === 'TARGET' && "💡 Vous fixez le montant total que vous souhaitez atteindre à terme (ex: 5 000 000 FCFA). Le simulateur calcule automatiquement l'effort d'épargne mensuel exact à mettre de côté pour y arriver."}
+              </p>
             </div>
           </div>
 
           {/* 3. Monthly Amount or Target Amount */}
           {strategy !== 'TARGET' ? (
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               <div className="flex justify-between items-center text-xs font-extrabold">
-                <label className="uppercase tracking-wider text-slate-600">
+                <label className="uppercase tracking-wider text-slate-600 dark:text-slate-400">
                   3. Versement Mensuel
                 </label>
-                <span className="text-blue-700 font-black text-sm">{formatFCFA(monthlyContribution)} / mois</span>
+                <span className="text-emerald-700 dark:text-emerald-400 font-black text-sm">{formatFCFA(monthlyContribution)} / mois</span>
               </div>
+
+              {/* Saisie directe du montant par l'utilisateur */}
+              <div className="relative">
+                <input
+                  type="number"
+                  min={1000}
+                  step={5000}
+                  value={monthlyContribution || ''}
+                  onChange={e => setMonthlyContribution(Math.max(0, Number(e.target.value)))}
+                  placeholder="Saisissez votre versement mensuel..."
+                  className="w-full p-3 pl-4 pr-24 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-base font-extrabold text-slate-900 dark:text-white outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                />
+                <span className="absolute right-3.5 top-3.5 text-xs font-extrabold text-slate-400 dark:text-slate-500">FCFA / mois</span>
+              </div>
+
+              {/* Curseur et raccourcis rapide */}
               <input
                 type="range"
-                min={10000}
+                min={5000}
                 max={500000}
                 step={5000}
                 value={monthlyContribution}
                 onChange={e => setMonthlyContribution(Number(e.target.value))}
-                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-700"
+                className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-600"
               />
-              <div className="flex gap-2">
+
+              <div className="flex flex-wrap gap-1.5">
                 {[15000, 30000, 50000, 100000, 200000].map(amt => (
                   <button
                     key={amt}
                     type="button"
                     onClick={() => setMonthlyContribution(amt)}
-                    className="px-2 py-1 bg-slate-100 hover:bg-slate-200 rounded-md text-[10px] font-bold text-slate-700"
+                    className={`px-2.5 py-1 rounded-md text-[10px] font-extrabold transition cursor-pointer ${
+                      monthlyContribution === amt
+                        ? 'bg-emerald-600 text-white shadow-2xs'
+                        : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300'
+                    }`}
                   >
-                    {amt / 1000}k FCFA
+                    {amt >= 1000000 ? `${amt / 1000000} M` : `${amt / 1000}k`} FCFA
                   </button>
                 ))}
               </div>
             </div>
           ) : (
             <div className="space-y-2">
-              <label className="text-xs font-extrabold uppercase tracking-wider text-slate-600 block">
+              <label className="text-xs font-extrabold uppercase tracking-wider text-slate-600 dark:text-slate-400 block">
                 3. Objectif de Capital à Terme (FCFA)
               </label>
               <div className="relative">
@@ -398,11 +444,11 @@ export const InvestmentPlanModule: React.FC<InvestmentPlanModuleProps> = ({
                   step={500000}
                   value={targetGoalAmount}
                   onChange={e => setTargetGoalAmount(Number(e.target.value))}
-                  className="w-full p-3 pl-4 pr-16 bg-slate-50 border border-slate-200 rounded-xl text-base font-extrabold text-slate-900 outline-none focus:border-blue-500"
+                  className="w-full p-3 pl-4 pr-16 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-base font-extrabold text-slate-900 dark:text-white outline-none focus:border-emerald-500"
                 />
                 <span className="absolute right-3.5 top-3.5 text-xs font-extrabold text-slate-400">FCFA</span>
               </div>
-              <p className="text-[11px] text-blue-700 font-medium">
+              <p className="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium">
                 Effort mensuel calculé automatiquement : <strong>{formatFCFA(effectiveMonthlyContribution)} / mois</strong>
               </p>
             </div>
@@ -420,7 +466,7 @@ export const InvestmentPlanModule: React.FC<InvestmentPlanModuleProps> = ({
                   type="button"
                   onClick={() => setHorizonYears(yrs)}
                   className={`py-2 rounded-lg transition-all cursor-pointer ${
-                    horizonYears === yrs ? 'bg-white text-blue-700 shadow-2xs' : 'text-slate-600 hover:text-slate-900'
+                    horizonYears === yrs ? 'bg-white text-emerald-700 dark:bg-slate-800 dark:text-emerald-400 shadow-2xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
                   }`}
                 >
                   {yrs} An{yrs > 1 ? 's' : ''}
@@ -457,8 +503,8 @@ export const InvestmentPlanModule: React.FC<InvestmentPlanModuleProps> = ({
 
         {/* Right Column: Output Summary & Charts */}
         <div className="lg:col-span-7 space-y-6">
-          {projectionResults.finalYear && (
-            <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-md space-y-6">
+          {projectionResults && projectionResults.finalYear ? (
+            <div className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-md space-y-6">
               {/* Target Results Summary Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
@@ -485,14 +531,14 @@ export const InvestmentPlanModule: React.FC<InvestmentPlanModuleProps> = ({
                   </span>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-900 space-y-1">
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-indigo-600 block">
+                <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200 space-y-1">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 block">
                     Rente Annuelle Passive
                   </span>
-                  <div className="text-xl sm:text-2xl font-black text-indigo-950">
+                  <div className="text-xl sm:text-2xl font-black text-emerald-950 dark:text-emerald-100">
                     {formatFCFA(projectionResults.finalYear.projectedAnnualPassiveIncome)} / an
                   </div>
-                  <span className="text-[11px] text-indigo-700 font-bold">
+                  <span className="text-[11px] text-emerald-700 dark:text-emerald-400 font-bold">
                     Revenu passif issu des dividendes
                   </span>
                 </div>
@@ -615,6 +661,20 @@ export const InvestmentPlanModule: React.FC<InvestmentPlanModuleProps> = ({
                     </>
                   )}
                 </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/90 dark:border-slate-800 p-8 sm:p-12 text-center space-y-5 shadow-2xs">
+              <div className="w-16 h-16 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto">
+                <Target className="w-8 h-8" />
+              </div>
+              <div className="max-w-md mx-auto space-y-2">
+                <h3 className="text-xl font-black text-slate-900 dark:text-white">
+                  Aucune action sélectionnée
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
+                  Veuillez choisir une entreprise dans la liste déroulante à gauche pour afficher la simulation de votre plan d'investissement, vos projections de capital et votre rente annuelle.
+                </p>
               </div>
             </div>
           )}

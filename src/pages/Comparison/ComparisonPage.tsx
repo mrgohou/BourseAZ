@@ -6,20 +6,41 @@ import { Button } from '../../components/ui/Button';
 import { SkeletonChart, SkeletonTable } from '../../components/ui/Skeleton';
 import { formatFCFA, formatPercent } from '../../lib/formatters';
 import { calculatePER, calculateROE, calculatePBR } from '../../lib/calculations';
-import { BarChart2, Plus, X, Trophy, AlertTriangle, ArrowRight, RefreshCw, Coins, Layers } from 'lucide-react';
+import { useAuth } from '../../features/auth/AuthContext';
+import {
+  BarChart2,
+  Plus,
+  X,
+  Trophy,
+  AlertTriangle,
+  ArrowRight,
+  RefreshCw,
+  Coins,
+  Layers,
+  Lock,
+  Compass,
+  CheckCircle2,
+  TrendingUp,
+} from 'lucide-react';
 
 interface ComparisonPageProps {
   initialSymbol?: string;
   onNavigate: (path: string) => void;
 }
 
-export const ComparisonPage: React.FC<ComparisonPageProps> = ({ initialSymbol = 'SNTS', onNavigate }) => {
+export const ComparisonPage: React.FC<ComparisonPageProps> = ({ initialSymbol, onNavigate }) => {
+  const { isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'DIVIDENDS'>('OVERVIEW');
-  const [selectedSymbols, setSelectedSymbols] = useState<string[]>([
-    initialSymbol,
-    initialSymbol === 'SLBC' ? 'SNTS' : 'SLBC',
-  ]);
+  const [selectedSymbols, setSelectedSymbols] = useState<string[]>(() => {
+    return initialSymbol ? [initialSymbol] : [];
+  });
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (initialSymbol) {
+      setSelectedSymbols([initialSymbol]);
+    }
+  }, [initialSymbol]);
 
   const handleRefresh = () => {
     setLoading(true);
@@ -37,11 +58,9 @@ export const ComparisonPage: React.FC<ComparisonPageProps> = ({ initialSymbol = 
   };
 
   const removeCompany = (symbol: string) => {
-    if (selectedSymbols.length > 1) {
-      setLoading(true);
-      setSelectedSymbols(selectedSymbols.filter(s => s !== symbol));
-      setTimeout(() => setLoading(false), 250);
-    }
+    setLoading(true);
+    setSelectedSymbols(selectedSymbols.filter(s => s !== symbol));
+    setTimeout(() => setLoading(false), 250);
   };
 
   const companiesToCompare = selectedSymbols.map(sym => {
@@ -91,8 +110,8 @@ export const ComparisonPage: React.FC<ComparisonPageProps> = ({ initialSymbol = 
           size="sm"
           variant="outline"
           onClick={handleRefresh}
-          disabled={loading}
-          className="shrink-0 text-xs font-bold text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800"
+          disabled={loading || selectedSymbols.length === 0}
+          className="shrink-0 text-xs font-bold text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/50"
         >
           <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${loading ? 'animate-spin' : ''}`} />
           {loading ? 'Calcul...' : 'Rafraîchir la comparaison'}
@@ -105,7 +124,7 @@ export const ComparisonPage: React.FC<ComparisonPageProps> = ({ initialSymbol = 
           onClick={() => setActiveTab('OVERVIEW')}
           className={`px-4 py-2.5 rounded-2xl text-xs font-black transition cursor-pointer flex items-center gap-2 ${
             activeTab === 'OVERVIEW'
-              ? 'bg-blue-700 text-white shadow-xs'
+              ? 'bg-emerald-600 text-white shadow-xs'
               : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
           }`}
         >
@@ -117,7 +136,7 @@ export const ComparisonPage: React.FC<ComparisonPageProps> = ({ initialSymbol = 
           onClick={() => setActiveTab('DIVIDENDS')}
           className={`px-4 py-2.5 rounded-2xl text-xs font-black transition cursor-pointer flex items-center gap-2 ${
             activeTab === 'DIVIDENDS'
-              ? 'bg-emerald-700 text-white shadow-xs'
+              ? 'bg-emerald-600 text-white shadow-xs'
               : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
           }`}
         >
@@ -127,252 +146,507 @@ export const ComparisonPage: React.FC<ComparisonPageProps> = ({ initialSymbol = 
       </div>
 
       {activeTab === 'DIVIDENDS' ? (
-        <DividendYieldComparer onNavigate={onNavigate} />
+        <DividendYieldComparer
+          selectedSymbols={selectedSymbols}
+          onSelectedSymbolsChange={setSelectedSymbols}
+          onNavigate={onNavigate}
+        />
       ) : (
         <>
           {/* Stock Selection Bar */}
-      <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
-        <label className="text-xs font-extrabold uppercase tracking-wider text-slate-600 block">
-          Actions sélectionnées ({selectedSymbols.length} / 3)
-        </label>
+          <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-emerald-100/80 dark:border-slate-800 shadow-2xs space-y-4">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-extrabold uppercase tracking-wider text-slate-600 dark:text-slate-400 block">
+                Actions sélectionnées ({selectedSymbols.length} / 3)
+              </label>
+              {selectedSymbols.length > 0 && (
+                <button
+                  onClick={() => setSelectedSymbols([])}
+                  className="text-xs text-rose-600 hover:underline font-bold cursor-pointer"
+                >
+                  Réinitialiser la sélection
+                </button>
+              )}
+            </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          {selectedSymbols.map(sym => {
-            const comp = DEMO_COMPANIES.find(c => c.symbol === sym);
-            return (
-              <div
-                key={sym}
-                className="flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-900 px-3 py-1.5 rounded-xl text-xs font-extrabold"
-              >
-                <span>{comp?.name} ({sym})</span>
-                {selectedSymbols.length > 1 && (
-                  <button
-                    onClick={() => removeCompany(sym)}
-                    className="p-0.5 text-blue-700 hover:text-rose-600 rounded cursor-pointer"
+            <div className="flex flex-wrap items-center gap-3">
+              {selectedSymbols.map(sym => {
+                const comp = DEMO_COMPANIES.find(c => c.symbol === sym);
+                return (
+                  <div
+                    key={sym}
+                    className="flex items-center gap-2 bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200 px-3.5 py-2 rounded-xl text-xs font-extrabold shadow-2xs"
                   >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                )}
+                    <span>{comp?.name} ({sym})</span>
+                    <button
+                      onClick={() => removeCompany(sym)}
+                      className="p-0.5 text-emerald-700 dark:text-emerald-300 hover:text-rose-600 dark:hover:text-rose-400 rounded cursor-pointer transition-colors"
+                      title="Retirer de la comparaison"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                );
+              })}
+
+              {selectedSymbols.length < 3 && (
+                <div className="relative">
+                  <select
+                    onChange={e => {
+                      if (e.target.value) {
+                        addCompany(e.target.value);
+                        e.target.value = '';
+                      }
+                    }}
+                    className="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold px-3.5 py-2 rounded-xl outline-none border border-slate-200 dark:border-slate-700 cursor-pointer transition-colors"
+                  >
+                    <option value="">
+                      {selectedSymbols.length === 0 ? '+ Sélectionner une action...' : '+ Ajouter une autre action...'}
+                    </option>
+                    {DEMO_COMPANIES.filter(c => !selectedSymbols.includes(c.symbol)).map(c => (
+                      <option key={c.symbol} value={c.symbol}>
+                        {c.name} ({c.symbol}) - {c.sector}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {selectedSymbols.length === 0 ? (
+            /* Empty State when no stock selected */
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/90 dark:border-slate-800 p-8 sm:p-12 text-center space-y-5 shadow-2xs">
+              <div className="w-16 h-16 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto">
+                <BarChart2 className="w-8 h-8" />
               </div>
-            );
-          })}
-
-          {selectedSymbols.length < 3 && (
-            <div className="relative">
-              <select
-                onChange={e => {
-                  if (e.target.value) {
-                    addCompany(e.target.value);
-                    e.target.value = '';
-                  }
-                }}
-                className="bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold px-3 py-2 rounded-xl outline-none border border-slate-200 cursor-pointer"
-              >
-                <option value="">+ Ajouter une action...</option>
-                {DEMO_COMPANIES.filter(c => !selectedSymbols.includes(c.symbol)).map(c => (
-                  <option key={c.symbol} value={c.symbol}>
-                    {c.name} ({c.symbol})
-                  </option>
-                ))}
-              </select>
+              <div className="max-w-md mx-auto space-y-2">
+                <h3 className="text-xl font-black text-slate-900 dark:text-white">
+                  Aucune action sélectionnée
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
+                  Veuillez choisir 1 à 3 actions dans le menu déroulant ci-dessus pour comparer leur cours actuel, cours intrinsèque, dernier dividende, rendement, BPA et PER.
+                </p>
+              </div>
+              <div className="pt-2">
+                <select
+                  onChange={e => {
+                    if (e.target.value) {
+                      addCompany(e.target.value);
+                      e.target.value = '';
+                    }
+                  }}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs px-5 py-3 rounded-xl cursor-pointer transition shadow-sm outline-none"
+                >
+                  <option value="" className="text-slate-900 bg-white">+ Choisir une première action à comparer...</option>
+                  {DEMO_COMPANIES.map(c => (
+                    <option key={c.symbol} value={c.symbol} className="text-slate-900 bg-white">
+                      {c.name} ({c.symbol}) - {c.sector}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
-          )}
-        </div>
-      </div>
+          ) : (
+            <>
+              {/* Winner Spotlight Banner (if companies selected) */}
+              {winner && (
+                <div className="p-6 rounded-2xl bg-gradient-to-r from-blue-900 to-indigo-900 text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-2xl bg-amber-400 text-slate-900 flex items-center justify-center shrink-0 shadow-lg">
+                      <Trophy className="w-8 h-8" />
+                    </div>
+                    <div>
+                      <div className="text-xs font-extrabold text-amber-300 uppercase tracking-widest mb-1">
+                        Action en tête sur la sélection ({companiesToCompare.length})
+                      </div>
+                      <h2 className="text-2xl font-black">{winner.company.name} ({winner.company.symbol})</h2>
+                      <p className="text-xs text-slate-300 mt-1">
+                        Performance historique : <strong className="text-emerald-400 font-black">+{maxChange.toFixed(2)} %</strong> sur la période analysée.
+                      </p>
+                    </div>
+                  </div>
 
-      {/* Winner Spotlight Banner */}
-      <div className="p-6 rounded-2xl bg-gradient-to-r from-blue-900 to-indigo-900 text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
-        <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-amber-400 text-slate-900 flex items-center justify-center shrink-0 shadow-lg">
-            <Trophy className="w-8 h-8" />
-          </div>
-          <div>
-            <div className="text-xs font-extrabold text-amber-300 uppercase tracking-widest mb-1">
-              Quelle action a le mieux progressé sur 1 an ?
-            </div>
-            <h2 className="text-2xl font-black">{winner.company.name} ({winner.company.symbol})</h2>
-            <p className="text-xs text-slate-300 mt-1">
-              Performance historique : <strong className="text-emerald-400 font-black">+{maxChange.toFixed(2)} %</strong> sur la période analysée.
-            </p>
-          </div>
-        </div>
+                  <Button size="md" variant="secondary" onClick={() => onNavigate(`/company/${winner.company.symbol}`)}>
+                    Voir l'analyse détaillée <ArrowRight className="w-4 h-4 ml-1" />
+                  </Button>
+                </div>
+              )}
 
-        <Button size="md" variant="secondary" onClick={() => onNavigate(`/company/${winner.company.symbol}`)}>
-          Voir l'analyse détaillée <ArrowRight className="w-4 h-4 ml-1" />
-        </Button>
-      </div>
+              {/* Comparison Chart or Skeleton */}
+              {loading ? (
+                <div className="space-y-6">
+                  <SkeletonChart />
+                  <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 shadow-xs">
+                    <SkeletonTable rows={5} />
+                  </div>
+                </div>
+              ) : (
+                <ComparisonChart companies={chartDataCompanies} />
+              )}
 
-      {/* Comparison Chart or Skeleton */}
-      {loading ? (
-        <div className="space-y-6">
-          <SkeletonChart />
-          <div className="bg-white rounded-3xl border border-slate-200/80 p-6 shadow-xs">
-            <SkeletonTable rows={5} />
-          </div>
-        </div>
-      ) : (
-        <>
-          {/* Comparison Chart */}
-          <ComparisonChart companies={chartDataCompanies} />
-        </>
-      )}
+              {/* Detailed Ratios Table */}
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden">
+                <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between flex-wrap gap-2">
+                  <div>
+                    <h3 className="text-base font-bold text-slate-900 dark:text-white">Tableau de Comparaison des Ratios Financiers</h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                      Accès public : Cours, Coût intrinsèque, Dividende, Rendement, BPA et PER.
+                    </p>
+                  </div>
+                  {!isAuthenticated && (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 text-xs font-bold">
+                      <Lock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                      Mode Invité (Ratios avancés verrouillés)
+                    </span>
+                  )}
+                </div>
 
-      {/* Detailed Ratios Table */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
-        <div className="p-6 border-b border-slate-100">
-          <h3 className="text-base font-bold text-slate-900">Tableau de Comparaison des Ratios Financiers</h3>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-slate-50 text-slate-500 uppercase text-[10px] font-extrabold border-b border-slate-200">
-                <th className="p-4">Critère Financier</th>
-                {companiesToCompare.map(item => (
-                  <th key={item.company.symbol} className="p-4 text-slate-900 font-extrabold">
-                    {item.company.name} ({item.company.symbol})
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 text-xs font-medium">
-              <tr>
-                <td className="p-4 font-bold text-slate-700 bg-slate-50/50">Cours Actuel</td>
-                {companiesToCompare.map(item => (
-                  <td key={item.company.symbol} className="p-4 font-extrabold text-slate-900">
-                    {formatFCFA(item.company.currentPrice)}
-                  </td>
-                ))}
-              </tr>
-
-              <tr>
-                <td className="p-4 font-bold text-slate-700 bg-slate-50/50">Coût Intrinsèque (Prix d'Entrée / IPO)</td>
-                {companiesToCompare.map(item => (
-                  <td key={item.company.symbol} className="p-4 font-bold text-indigo-900">
-                    {item.company.ipoPrice ? `${formatFCFA(item.company.ipoPrice)} ${item.company.ipoDate ? `(${item.company.ipoDate})` : ''}` : '1 000 FCFA'}
-                  </td>
-                ))}
-              </tr>
-
-              <tr>
-                <td className="p-4 font-bold text-slate-700 bg-slate-50/50">Plus-value depuis l'Entrée</td>
-                {companiesToCompare.map(item => {
-                  const ipo = item.company.ipoPrice || 1000;
-                  const diff = item.company.currentPrice - ipo;
-                  const pct = (diff / ipo) * 100;
-                  return (
-                    <td key={item.company.symbol} className="p-4 font-extrabold">
-                      <span className={`px-2 py-1 rounded-md text-xs ${pct >= 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
-                        {pct >= 0 ? '+' : ''}{pct.toFixed(0)} %
+                {!isAuthenticated && (
+                  <div className="p-4 bg-amber-50/70 dark:bg-amber-950/40 border-b border-amber-200/60 dark:border-amber-800/60 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+                    <div className="flex items-center gap-2 text-amber-900 dark:text-amber-200 font-medium">
+                      <Lock className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+                      <span>
+                        <strong>Ratios réservés aux membres :</strong> Connectez-vous gratuitement pour débloquer le ROE, le PBR, la plus-value historique et la phase de cycle de vie.
                       </span>
-                    </td>
-                  );
-                })}
-              </tr>
+                    </div>
+                    <button
+                      onClick={() => onNavigate('/auth')}
+                      className="shrink-0 px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-extrabold text-xs cursor-pointer shadow-2xs transition"
+                    >
+                      Se connecter
+                    </button>
+                  </div>
+                )}
 
-              <tr>
-                <td className="p-4 font-bold text-slate-700 bg-slate-50/50">BPA (Bénéfice Par Action)</td>
-                {companiesToCompare.map(item => (
-                  <td key={item.company.symbol} className="p-4 font-bold">
-                    {item.company.eps !== undefined ? `${item.company.eps} FCFA` : 'N/A'}
-                  </td>
-                ))}
-              </tr>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-slate-50 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400 uppercase text-[10px] font-extrabold border-b border-slate-200 dark:border-slate-800">
+                        <th className="p-4">Critère Financier</th>
+                        {companiesToCompare.map(item => (
+                          <th key={item.company.symbol} className="p-4 text-slate-900 dark:text-white font-extrabold">
+                            {item.company.name} ({item.company.symbol})
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs font-medium">
+                      {/* 1. Cours Actuel - PUBLIC */}
+                      <tr>
+                        <td className="p-4 font-bold text-slate-700 dark:text-slate-300 bg-slate-50/50 dark:bg-slate-800/40">
+                          Cours Actuel
+                        </td>
+                        {companiesToCompare.map(item => (
+                          <td key={item.company.symbol} className="p-4 font-extrabold text-slate-900 dark:text-white">
+                            {formatFCFA(item.company.currentPrice)}
+                          </td>
+                        ))}
+                      </tr>
 
-              <tr>
-                <td className="p-4 font-bold text-slate-700 bg-slate-50/50">PER (Price Earning Ratio)</td>
-                {companiesToCompare.map(item => {
-                  const perCalc = calculatePER(item.company.currentPrice, item.company.eps);
-                  return (
-                    <td key={item.company.symbol} className="p-4">
-                      {perCalc.status === 'VALID' ? (
-                        <span className="font-extrabold text-blue-700 bg-blue-50 dark:bg-blue-950 dark:text-blue-300 px-2 py-1 rounded-md">
-                          {perCalc.per}x
-                        </span>
-                      ) : (
-                        <span className="text-rose-700 bg-rose-50 px-2 py-1 rounded-md text-[11px] font-bold">
-                          Non disp. ({perCalc.status})
-                        </span>
-                      )}
-                    </td>
-                  );
-                })}
-              </tr>
+                      {/* 2. Coût Intrinsèque - PUBLIC */}
+                      <tr>
+                        <td className="p-4 font-bold text-slate-700 dark:text-slate-300 bg-slate-50/50 dark:bg-slate-800/40">
+                          Coût Intrinsèque (Prix d'Entrée / IPO)
+                        </td>
+                        {companiesToCompare.map(item => (
+                          <td key={item.company.symbol} className="p-4 font-bold text-indigo-900 dark:text-indigo-300">
+                            {item.company.ipoPrice ? `${formatFCFA(item.company.ipoPrice)} ${item.company.ipoDate ? `(${item.company.ipoDate})` : ''}` : '1 000 FCFA'}
+                          </td>
+                        ))}
+                      </tr>
 
-              <tr>
-                <td className="p-4 font-bold text-slate-700 bg-slate-50/50">ROE (Rentabilité Capitaux Propres)</td>
-                {companiesToCompare.map(item => {
-                  const roeCalc = calculateROE(item.company.roe);
-                  return (
-                    <td key={item.company.symbol} className="p-4">
-                      {roeCalc.roe !== null ? (
-                        <span className={`font-extrabold px-2 py-1 rounded-md ${
-                          roeCalc.roe >= 18 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' :
-                          roeCalc.roe >= 12 ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300' :
-                          'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200'
-                        }`}>
-                          {roeCalc.roe}%
-                        </span>
-                      ) : (
-                        <span className="text-slate-400 font-medium">N/A</span>
-                      )}
-                    </td>
-                  );
-                })}
-              </tr>
+                      {/* 3. Dernier Dividende - PUBLIC */}
+                      <tr>
+                        <td className="p-4 font-bold text-slate-700 dark:text-slate-300 bg-slate-50/50 dark:bg-slate-800/40">
+                          Dernier Dividende
+                        </td>
+                        {companiesToCompare.map(item => (
+                          <td key={item.company.symbol} className="p-4 font-bold text-slate-900 dark:text-white">
+                            {item.company.lastDividend ? formatFCFA(item.company.lastDividend) : '0 FCFA'}
+                          </td>
+                        ))}
+                      </tr>
 
-              <tr>
-                <td className="p-4 font-bold text-slate-700 bg-slate-50/50">PBR (Price-to-Book Ratio)</td>
-                {companiesToCompare.map(item => {
-                  const pbrCalc = calculatePBR(item.company.currentPrice, item.company.bookValuePerShare, item.company.pbr);
-                  return (
-                    <td key={item.company.symbol} className="p-4">
-                      {pbrCalc.pbr !== null ? (
-                        <span className={`font-extrabold px-2 py-1 rounded-md ${
-                          pbrCalc.pbr < 1.0 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' :
-                          pbrCalc.pbr <= 2.0 ? 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300' :
-                          'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
-                        }`}>
-                          {pbrCalc.pbr}x
-                        </span>
-                      ) : (
-                        <span className="text-slate-400 font-medium">N/A</span>
-                      )}
-                    </td>
-                  );
-                })}
-              </tr>
+                      {/* 4. Rendement du Dividende - PUBLIC */}
+                      <tr>
+                        <td className="p-4 font-bold text-slate-700 dark:text-slate-300 bg-slate-50/50 dark:bg-slate-800/40">
+                          Rendement du Dividende
+                        </td>
+                        {companiesToCompare.map(item => (
+                          <td key={item.company.symbol} className="p-4 font-extrabold text-emerald-700 dark:text-emerald-400">
+                            {item.company.dividendYield ? formatPercent(item.company.dividendYield, false) : '0 %'}
+                          </td>
+                        ))}
+                      </tr>
 
-              <tr>
-                <td className="p-4 font-bold text-slate-700 bg-slate-50/50">Dernier Dividende</td>
-                {companiesToCompare.map(item => (
-                  <td key={item.company.symbol} className="p-4 font-bold text-slate-900">
-                    {item.company.lastDividend ? formatFCFA(item.company.lastDividend) : '0 FCFA'}
-                  </td>
-                ))}
-              </tr>
+                      {/* 5. BPA (Bénéfice Par Action) - PUBLIC */}
+                      <tr>
+                        <td className="p-4 font-bold text-slate-700 dark:text-slate-300 bg-slate-50/50 dark:bg-slate-800/40">
+                          BPA (Bénéfice Par Action)
+                        </td>
+                        {companiesToCompare.map(item => (
+                          <td key={item.company.symbol} className="p-4 font-bold text-slate-900 dark:text-white">
+                            {item.company.eps !== undefined ? `${item.company.eps} FCFA` : 'N/A'}
+                          </td>
+                        ))}
+                      </tr>
 
-              <tr>
-                <td className="p-4 font-bold text-slate-700 bg-slate-50/50">Rendement du Dividende</td>
-                {companiesToCompare.map(item => (
-                  <td key={item.company.symbol} className="p-4 font-extrabold text-emerald-700">
-                    {item.company.dividendYield ? formatPercent(item.company.dividendYield, false) : '0 %'}
-                  </td>
-                ))}
-              </tr>
+                      {/* 6. PER (Price Earning Ratio) - PUBLIC */}
+                      <tr>
+                        <td className="p-4 font-bold text-slate-700 dark:text-slate-300 bg-slate-50/50 dark:bg-slate-800/40">
+                          PER (Price Earning Ratio)
+                        </td>
+                        {companiesToCompare.map(item => {
+                          const perCalc = calculatePER(item.company.currentPrice, item.company.eps);
+                          return (
+                            <td key={item.company.symbol} className="p-4">
+                              {perCalc.status === 'VALID' ? (
+                                <span className="font-extrabold text-blue-700 bg-blue-50 dark:bg-blue-950 dark:text-blue-300 px-2.5 py-1 rounded-md">
+                                  {perCalc.per}x
+                                </span>
+                              ) : (
+                                <span className="text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950 px-2 py-1 rounded-md text-[11px] font-bold">
+                                  Non disp. ({perCalc.status})
+                                </span>
+                              )}
+                            </td>
+                          );
+                        })}
+                      </tr>
 
-              <tr>
-                <td className="p-4 font-bold text-slate-700 bg-slate-50/50">Phase de Cycle de Vie</td>
-                {companiesToCompare.map(item => (
-                  <td key={item.company.symbol} className="p-4 font-bold uppercase text-[11px]">
-                    {item.company.lifecycle}
-                  </td>
-                ))}
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+                      {/* 7. Plus-value depuis l'Entrée - LOCKED FOR GUESTS */}
+                      <tr>
+                        <td className="p-4 font-bold text-slate-700 dark:text-slate-300 bg-slate-50/50 dark:bg-slate-800/40 flex items-center justify-between">
+                          <span>Plus-value depuis l'Entrée</span>
+                          {!isAuthenticated && <Lock className="w-3.5 h-3.5 text-amber-500 inline ml-1" />}
+                        </td>
+                        {companiesToCompare.map(item => {
+                          const ipo = item.company.ipoPrice || 1000;
+                          const diff = item.company.currentPrice - ipo;
+                          const pct = (diff / ipo) * 100;
+                          return (
+                            <td key={item.company.symbol} className="p-4 font-extrabold">
+                              {isAuthenticated ? (
+                                <span className={`px-2 py-1 rounded-md text-xs ${pct >= 0 ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-300'}`}>
+                                  {pct >= 0 ? '+' : ''}{pct.toFixed(0)} %
+                                </span>
+                              ) : (
+                                <button
+                                  onClick={() => onNavigate('/auth')}
+                                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[11px] font-semibold hover:bg-amber-100 hover:text-amber-900 dark:hover:bg-amber-950 dark:hover:text-amber-200 transition cursor-pointer"
+                                  title="Connectez-vous pour débloquer cette donnée"
+                                >
+                                  <Lock className="w-3 h-3 text-amber-500" /> Réservé membres
+                                </button>
+                              )}
+                            </td>
+                          );
+                        })}
+                      </tr>
+
+                      {/* 8. ROE - LOCKED FOR GUESTS */}
+                      <tr>
+                        <td className="p-4 font-bold text-slate-700 dark:text-slate-300 bg-slate-50/50 dark:bg-slate-800/40 flex items-center justify-between">
+                          <span>ROE (Rentabilité Capitaux Propres)</span>
+                          {!isAuthenticated && <Lock className="w-3.5 h-3.5 text-amber-500 inline ml-1" />}
+                        </td>
+                        {companiesToCompare.map(item => {
+                          const roeCalc = calculateROE(item.company.roe);
+                          return (
+                            <td key={item.company.symbol} className="p-4">
+                              {isAuthenticated ? (
+                                roeCalc.roe !== null ? (
+                                  <span className={`font-extrabold px-2 py-1 rounded-md ${
+                                    roeCalc.roe >= 18 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' :
+                                    roeCalc.roe >= 12 ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300' :
+                                    'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200'
+                                  }`}>
+                                    {roeCalc.roe}%
+                                  </span>
+                                ) : (
+                                  <span className="text-slate-400 font-medium">N/A</span>
+                                )
+                              ) : (
+                                <button
+                                  onClick={() => onNavigate('/auth')}
+                                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[11px] font-semibold hover:bg-amber-100 hover:text-amber-900 dark:hover:bg-amber-950 dark:hover:text-amber-200 transition cursor-pointer"
+                                  title="Connectez-vous pour débloquer cette donnée"
+                                >
+                                  <Lock className="w-3 h-3 text-amber-500" /> Réservé membres
+                                </button>
+                              )}
+                            </td>
+                          );
+                        })}
+                      </tr>
+
+                      {/* 9. PBR - LOCKED FOR GUESTS */}
+                      <tr>
+                        <td className="p-4 font-bold text-slate-700 dark:text-slate-300 bg-slate-50/50 dark:bg-slate-800/40 flex items-center justify-between">
+                          <span>PBR (Price-to-Book Ratio)</span>
+                          {!isAuthenticated && <Lock className="w-3.5 h-3.5 text-amber-500 inline ml-1" />}
+                        </td>
+                        {companiesToCompare.map(item => {
+                          const pbrCalc = calculatePBR(item.company.currentPrice, item.company.bookValuePerShare, item.company.pbr);
+                          return (
+                            <td key={item.company.symbol} className="p-4">
+                              {isAuthenticated ? (
+                                pbrCalc.pbr !== null ? (
+                                  <span className={`font-extrabold px-2 py-1 rounded-md ${
+                                    pbrCalc.pbr < 1.0 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' :
+                                    pbrCalc.pbr <= 2.0 ? 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300' :
+                                    'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
+                                  }`}>
+                                    {pbrCalc.pbr}x
+                                  </span>
+                                ) : (
+                                  <span className="text-slate-400 font-medium">N/A</span>
+                                )
+                              ) : (
+                                <button
+                                  onClick={() => onNavigate('/auth')}
+                                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[11px] font-semibold hover:bg-amber-100 hover:text-amber-900 dark:hover:bg-amber-950 dark:hover:text-amber-200 transition cursor-pointer"
+                                  title="Connectez-vous pour débloquer cette donnée"
+                                >
+                                  <Lock className="w-3 h-3 text-amber-500" /> Réservé membres
+                                </button>
+                              )}
+                            </td>
+                          );
+                        })}
+                      </tr>
+
+                      {/* 10. Cycle de Vie - LOCKED FOR GUESTS */}
+                      <tr>
+                        <td className="p-4 font-bold text-slate-700 dark:text-slate-300 bg-slate-50/50 dark:bg-slate-800/40 flex items-center justify-between">
+                          <span>Phase de Cycle de Vie</span>
+                          {!isAuthenticated && <Lock className="w-3.5 h-3.5 text-amber-500 inline ml-1" />}
+                        </td>
+                        {companiesToCompare.map(item => (
+                          <td key={item.company.symbol} className="p-4 font-bold uppercase text-[11px]">
+                            {isAuthenticated ? (
+                              item.company.lifecycle
+                            ) : (
+                              <button
+                                onClick={() => onNavigate('/auth')}
+                                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[11px] font-semibold hover:bg-amber-100 hover:text-amber-900 dark:hover:bg-amber-950 dark:hover:text-amber-200 transition cursor-pointer"
+                                title="Connectez-vous pour débloquer cette donnée"
+                              >
+                                <Lock className="w-3 h-3 text-amber-500" /> Réservé membres
+                              </button>
+                            )}
+                          </td>
+                        ))}
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Educational Info Card below table */}
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-emerald-100 dark:border-slate-800 p-6 sm:p-8 shadow-xs space-y-6">
+                <div className="flex items-start gap-4 border-b border-slate-100 dark:border-slate-800 pb-5">
+                  <div className="p-3 bg-emerald-50 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 rounded-2xl shrink-0">
+                    <Compass className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 text-[10px] font-extrabold uppercase tracking-wider mb-1">
+                      Guide Stratégique BRVM
+                    </div>
+                    <h3 className="text-xl font-black text-slate-900 dark:text-white">
+                      Comment bien choisir une action grâce aux 3 facteurs différenciants (BPA, PER & Rendement) ?
+                    </h3>
+                    <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 font-medium">
+                      Lors de la comparaison entre plusieurs entreprises de la BRVM, ces trois indicateurs financiers fondamentaux vous permettent de déceler les meilleures opportunités.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* Facteur 1: BPA */}
+                  <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="w-8 h-8 rounded-xl bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 font-black text-xs flex items-center justify-center">
+                        1
+                      </span>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
+                        Rentabilité
+                      </span>
+                    </div>
+                    <h4 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                      <Coins className="w-4 h-4 text-blue-600 dark:text-blue-400" /> BPA (Bénéfice Par Action)
+                    </h4>
+                    <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
+                      Le BPA mesure la part de bénéfice net générée par l'entreprise pour chaque action en circulation.
+                    </p>
+                    <div className="pt-2 border-t border-slate-200/60 dark:border-slate-700/60 space-y-1 text-xs">
+                      <div className="font-extrabold text-blue-700 dark:text-blue-400">💡 Conseil d'analyse :</div>
+                      <p className="text-slate-500 dark:text-slate-400 text-[11px] leading-relaxed">
+                        Privilégiez les sociétés affichant un BPA élevé et en progression régulière d'une année sur l'autre. C'est le moteur principal de la hausse future du cours.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Facteur 2: PER */}
+                  <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="w-8 h-8 rounded-xl bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 font-black text-xs flex items-center justify-center">
+                        2
+                      </span>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300">
+                        Prix & Valorisation
+                      </span>
+                    </div>
+                    <h4 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                      <BarChart2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400" /> PER (Price Earnings Ratio)
+                    </h4>
+                    <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
+                      Le PER indique combien de fois le bénéfice annuel vous payez en achetant l'action au cours actuel (Cours / BPA).
+                    </p>
+                    <div className="pt-2 border-t border-slate-200/60 dark:border-slate-700/60 space-y-1 text-xs">
+                      <div className="font-extrabold text-indigo-700 dark:text-indigo-400">💡 Conseil d'analyse :</div>
+                      <p className="text-slate-500 dark:text-slate-400 text-[11px] leading-relaxed">
+                        Un PER faible (&lt; 8x à 10x sur la BRVM) peut signaler une opportunité sous-évaluée. Comparez toujours 2 sociétés du <strong>même secteur</strong> (ex: SGBCI vs BOA).
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Facteur 3: Rendement du Dividende */}
+                  <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-black text-xs flex items-center justify-center">
+                        3
+                      </span>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300">
+                        Revenu Cash Annuel
+                      </span>
+                    </div>
+                    <h4 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                      <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> Rendement du Dividende
+                    </h4>
+                    <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
+                      Indique le pourcentage net du prix investi restitué directement chaque année en argent comptant.
+                    </p>
+                    <div className="pt-2 border-t border-slate-200/60 dark:border-slate-700/60 space-y-1 text-xs">
+                      <div className="font-extrabold text-emerald-700 dark:text-emerald-400">💡 Conseil d'analyse :</div>
+                      <p className="text-slate-500 dark:text-slate-400 text-[11px] leading-relaxed">
+                        Sur la BRVM, un rendement &gt; 7 % à 9 % net est excellent pour générer un revenu passif régulier. Vérifiez que la société conserve assez de bénéfices pour réinvestir.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Golden Rule Banner */}
+                <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/80 flex items-center gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <p className="text-xs font-medium text-emerald-900 dark:text-emerald-200 leading-relaxed">
+                    <strong>Règle d'or pour bien choisir :</strong> L'action idéale réunit un <strong>BPA solide et croissant</strong>, un <strong>PER attractif</strong> par rapport à ses concurrents, et un <strong>Rendement de dividende soutenable</strong> versé chaque année.
+                  </p>
+                </div>
+              </div>
+            </>
+          )}
         </>
       )}
     </div>

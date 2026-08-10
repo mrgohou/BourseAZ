@@ -27,6 +27,7 @@ import {
   ShieldCheck,
   Layers,
   Sparkles,
+  X,
 } from 'lucide-react';
 
 export type ComparisonMetric = 'YIELD' | 'PAYOUT' | 'AMOUNT';
@@ -110,21 +111,56 @@ const COMPANY_COLORS: Record<string, string> = {
   PALC: '#16a34a', // Green
 };
 
-interface DividendYieldComparerProps {
+export interface DividendYieldComparerProps {
   onNavigate?: (path: string) => void;
+  selectedSymbols?: string[];
+  onSelectedSymbolsChange?: (symbols: string[]) => void;
 }
 
-export const DividendYieldComparer: React.FC<DividendYieldComparerProps> = ({ onNavigate }) => {
-  const [selectedSymbols, setSelectedSymbols] = useState<string[]>(['SNTS', 'TTLCI', 'ONTBF']);
+const getDividendHistory = (sym: string): HistoricalDividendRecord[] => {
+  if (DIVIDEND_HISTORIES[sym]) {
+    return DIVIDEND_HISTORIES[sym];
+  }
+  const company = DEMO_COMPANIES.find((c) => c.symbol === sym);
+  if (!company) return [];
+
+  const div = company.lastDividend || Math.round((company.currentPrice * (company.dividendYield || 7.0)) / 100);
+  const eps = company.eps || Math.round(div * 1.25);
+  const price = company.currentPrice;
+  const yieldPct = company.dividendYield || (price > 0 ? (div / price) * 100 : 7.0);
+  const payout = eps > 0 ? (div / eps) * 100 : 75;
+
+  return [
+    { year: 2021, dividend: Math.round(div * 0.75), eps: Math.round(eps * 0.75), price: Math.round(price * 0.8), payoutRatio: Math.min(90, Math.round(payout * 0.95)), yieldPercent: Number((yieldPct * 0.9).toFixed(2)) },
+    { year: 2022, dividend: Math.round(div * 0.82), eps: Math.round(eps * 0.82), price: Math.round(price * 0.85), payoutRatio: Math.min(90, Math.round(payout * 0.97)), yieldPercent: Number((yieldPct * 0.95).toFixed(2)) },
+    { year: 2023, dividend: Math.round(div * 0.9), eps: Math.round(eps * 0.9), price: Math.round(price * 0.92), payoutRatio: Math.min(90, Math.round(payout)), yieldPercent: Number((yieldPct * 0.98).toFixed(2)) },
+    { year: 2024, dividend: Math.round(div * 0.95), eps: Math.round(eps * 0.96), price: Math.round(price * 0.96), payoutRatio: Math.min(90, Math.round(payout * 1.01)), yieldPercent: Number((yieldPct * 0.99).toFixed(2)) },
+    { year: 2025, dividend: div, eps: eps, price: price, payoutRatio: Math.min(95, Math.round(payout * 1.02)), yieldPercent: Number(yieldPct.toFixed(2)) },
+  ];
+};
+
+export const DividendYieldComparer: React.FC<DividendYieldComparerProps> = ({
+  onNavigate,
+  selectedSymbols: propSelectedSymbols,
+  onSelectedSymbolsChange,
+}) => {
+  const [internalSymbols, setInternalSymbols] = useState<string[]>([]);
+  const selectedSymbols = propSelectedSymbols !== undefined ? propSelectedSymbols : internalSymbols;
+
+  const setSelectedSymbols = (symbols: string[]) => {
+    if (onSelectedSymbolsChange) {
+      onSelectedSymbolsChange(symbols);
+    }
+    setInternalSymbols(symbols);
+  };
+
   const [metric, setMetric] = useState<ComparisonMetric>('YIELD');
   const [investmentAmount, setInvestmentAmount] = useState<number>(1000000); // 1.000.000 FCFA
 
   // Add / Remove selection handlers
   const toggleSymbol = (sym: string) => {
     if (selectedSymbols.includes(sym)) {
-      if (selectedSymbols.length > 1) {
-        setSelectedSymbols(selectedSymbols.filter((s) => s !== sym));
-      }
+      setSelectedSymbols(selectedSymbols.filter((s) => s !== sym));
     } else {
       if (selectedSymbols.length < 5) {
         setSelectedSymbols([...selectedSymbols, sym]);
@@ -143,7 +179,7 @@ export const DividendYieldComparer: React.FC<DividendYieldComparerProps> = ({ on
     return years.map((yr) => {
       const point: any = { year: `${yr}` };
       selectedSymbols.forEach((sym) => {
-        const history = DIVIDEND_HISTORIES[sym] || [];
+        const history = getDividendHistory(sym);
         const record = history.find((r) => r.year === yr);
         if (record) {
           if (metric === 'YIELD') point[sym] = record.yieldPercent;
@@ -161,7 +197,7 @@ export const DividendYieldComparer: React.FC<DividendYieldComparerProps> = ({ on
   const selectedCompanies = useMemo(() => {
     return selectedSymbols.map((sym) => {
       const company = DEMO_COMPANIES.find((c) => c.symbol === sym) || DEMO_COMPANIES[0];
-      const history = DIVIDEND_HISTORIES[sym] || [];
+      const history = getDividendHistory(sym);
       const latestRec = history[history.length - 1] || { yieldPercent: 0, payoutRatio: 0, dividend: 0 };
       const firstRec = history[0] || { dividend: 1 };
       
@@ -236,37 +272,79 @@ export const DividendYieldComparer: React.FC<DividendYieldComparerProps> = ({ on
           </div>
         </div>
 
-        {/* Stock Selector Badges */}
-        <div>
-          <label className="text-xs font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500 block mb-2.5">
-            Sélectionner les entreprises à comparer (jusqu'à 5 actions) :
-          </label>
-          <div className="flex flex-wrap gap-2.5">
-            {Object.keys(DIVIDEND_HISTORIES).map((sym) => {
+        {/* Stock Selection Bar */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400 block">
+              Actions sélectionnées ({selectedSymbols.length} / 5) :
+            </label>
+            {selectedSymbols.length > 0 && (
+              <button
+                onClick={() => setSelectedSymbols([])}
+                className="text-xs text-rose-600 hover:underline font-bold cursor-pointer"
+              >
+                Réinitialiser la sélection
+              </button>
+            )}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2.5">
+            {selectedSymbols.map((sym) => {
               const comp = DEMO_COMPANIES.find((c) => c.symbol === sym);
-              const isSelected = selectedSymbols.includes(sym);
               const color = COMPANY_COLORS[sym] || '#2563eb';
 
               return (
-                <button
+                <div
                   key={sym}
-                  onClick={() => toggleSymbol(sym)}
-                  className={`px-3.5 py-2 rounded-2xl text-xs font-extrabold transition cursor-pointer flex items-center gap-2 border ${
-                    isSelected
-                      ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 border-slate-900 dark:border-white shadow-xs'
-                      : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-750'
-                  }`}
+                  className="flex items-center gap-2 bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200 px-3.5 py-2 rounded-xl text-xs font-extrabold shadow-2xs"
                 >
                   <span
                     className="w-2.5 h-2.5 rounded-full shrink-0"
-                    style={{ backgroundColor: isSelected ? color : '#94a3b8' }}
+                    style={{ backgroundColor: color }}
                   />
-                  <span>{comp?.name || sym}</span>
-                  <span className="text-[10px] opacity-75 font-mono">({sym})</span>
-                  {isSelected && <CheckCircle2 className="w-3.5 h-3.5 ml-0.5 text-emerald-400" />}
-                </button>
+                  <span>{comp?.name || sym} ({sym})</span>
+                  <button
+                    onClick={() => toggleSymbol(sym)}
+                    className="p-0.5 text-emerald-700 dark:text-emerald-300 hover:text-rose-600 dark:hover:text-rose-400 rounded cursor-pointer transition-colors"
+                    title="Retirer de l'analyse"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               );
             })}
+
+            {/* Dropdown list for selecting additional actions */}
+            {selectedSymbols.length < 5 && (
+              <div className="relative">
+                <select
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      if (!selectedSymbols.includes(e.target.value)) {
+                        setSelectedSymbols([...selectedSymbols, e.target.value]);
+                      }
+                      e.target.value = '';
+                    }
+                  }}
+                  className="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold px-3.5 py-2 rounded-xl outline-none border border-slate-200 dark:border-slate-700 cursor-pointer transition-colors"
+                >
+                  <option value="">
+                    {selectedSymbols.length === 0
+                      ? '+ Sélectionner une action dans la liste déroulante...'
+                      : '+ Ajouter une autre action (liste déroulante)...'}
+                  </option>
+                  {DEMO_COMPANIES.map((c) => (
+                    <option
+                      key={c.symbol}
+                      value={c.symbol}
+                      disabled={selectedSymbols.includes(c.symbol)}
+                    >
+                      {c.name} ({c.symbol}) - {c.sector} {selectedSymbols.includes(c.symbol) ? '✓' : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
         </div>
 
