@@ -47,7 +47,7 @@ export const DIVIDEND_HISTORIES: Record<string, HistoricalDividendRecord[]> = {
     { year: 2022, dividend: 1380, eps: 1580, price: 14200, payoutRatio: 87.3, yieldPercent: 9.72 },
     { year: 2023, dividend: 1450, eps: 1710, price: 15500, payoutRatio: 84.8, yieldPercent: 9.35 },
     { year: 2024, dividend: 1575, eps: 1850, price: 16500, payoutRatio: 85.1, yieldPercent: 9.55 },
-    { year: 2025, dividend: 1680, eps: 1980, price: 17800, payoutRatio: 84.8, yieldPercent: 9.44 },
+    { year: 2025, dividend: 1680, eps: 1980, price: 32000, payoutRatio: 84.8, yieldPercent: 5.25 },
   ],
   SGBC: [
     { year: 2021, dividend: 620, eps: 950, price: 10500, payoutRatio: 65.3, yieldPercent: 5.90 },
@@ -61,14 +61,14 @@ export const DIVIDEND_HISTORIES: Record<string, HistoricalDividendRecord[]> = {
     { year: 2022, dividend: 160, eps: 195, price: 1850, payoutRatio: 82.1, yieldPercent: 8.65 },
     { year: 2023, dividend: 185, eps: 220, price: 2050, payoutRatio: 84.1, yieldPercent: 9.02 },
     { year: 2024, dividend: 210, eps: 240, price: 2150, payoutRatio: 87.5, yieldPercent: 9.77 },
-    { year: 2025, dividend: 230, eps: 265, price: 2250, payoutRatio: 86.8, yieldPercent: 10.22 },
+    { year: 2025, dividend: 230, eps: 265, price: 2995, payoutRatio: 86.8, yieldPercent: 7.68 },
   ],
   SLBC: [
     { year: 2021, dividend: 3200, eps: 5100, price: 72000, payoutRatio: 62.7, yieldPercent: 4.44 },
     { year: 2022, dividend: 3500, eps: 5800, price: 78000, payoutRatio: 60.3, yieldPercent: 4.49 },
     { year: 2023, dividend: 3800, eps: 6200, price: 81000, payoutRatio: 61.3, yieldPercent: 4.69 },
-    { year: 2024, dividend: 4050, eps: 6800, price: 84000, payoutRatio: 59.6, yieldPercent: 4.82 },
-    { year: 2025, dividend: 4300, eps: 7200, price: 86000, payoutRatio: 59.7, yieldPercent: 5.00 },
+    { year: 2024, dividend: 4050, eps: 6800, price: 37000, payoutRatio: 59.6, yieldPercent: 10.95 },
+    { year: 2025, dividend: 4300, eps: 7200, price: 37005, payoutRatio: 59.7, yieldPercent: 11.62 },
   ],
   ONTBF: [
     { year: 2021, dividend: 210, eps: 260, price: 2100, payoutRatio: 80.8, yieldPercent: 10.00 },
@@ -82,7 +82,7 @@ export const DIVIDEND_HISTORIES: Record<string, HistoricalDividendRecord[]> = {
     { year: 2022, dividend: 420, eps: 610, price: 5600, payoutRatio: 68.9, yieldPercent: 7.50 },
     { year: 2023, dividend: 500, eps: 720, price: 6500, payoutRatio: 69.4, yieldPercent: 7.69 },
     { year: 2024, dividend: 620, eps: 850, price: 7200, payoutRatio: 72.9, yieldPercent: 8.61 },
-    { year: 2025, dividend: 710, eps: 960, price: 7800, payoutRatio: 74.0, yieldPercent: 9.10 },
+    { year: 2025, dividend: 710, eps: 960, price: 11600, payoutRatio: 74.0, yieldPercent: 6.12 },
   ],
   CIEC: [
     { year: 2021, dividend: 110, eps: 150, price: 1750, payoutRatio: 73.3, yieldPercent: 6.29 },
@@ -96,7 +96,7 @@ export const DIVIDEND_HISTORIES: Record<string, HistoricalDividendRecord[]> = {
     { year: 2022, dividend: 420, eps: 580, price: 5200, payoutRatio: 72.4, yieldPercent: 8.08 },
     { year: 2023, dividend: 500, eps: 720, price: 6500, payoutRatio: 69.4, yieldPercent: 7.69 },
     { year: 2024, dividend: 580, eps: 810, price: 6800, payoutRatio: 71.6, yieldPercent: 8.53 },
-    { year: 2025, dividend: 640, eps: 890, price: 7100, payoutRatio: 71.9, yieldPercent: 9.01 },
+    { year: 2025, dividend: 640, eps: 890, price: 9100, payoutRatio: 71.9, yieldPercent: 7.03 },
   ],
 };
 
