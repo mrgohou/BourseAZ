@@ -1,0 +1,8 @@
+{
+	"appId": "com.bourseclair.app",
+	"appName": "BourseClair",
+	"webDir": "dist",
+	"server": {
+		"androidScheme": "https"
+	}
+}

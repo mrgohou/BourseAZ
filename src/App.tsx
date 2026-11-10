@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { AuthProvider } from './features/auth/AuthContext';
+import { AuthProvider, useAuth } from './features/auth/AuthContext';
 import { ThemeProvider } from './features/theme/ThemeContext';
+import { MarketProvider } from './features/market/MarketContext';
 import { Navbar } from './components/navigation/Navbar';
 import { BottomNav } from './components/navigation/BottomNav';
 import { Footer } from './components/navigation/Footer';
+import { trackPageView } from './services/analytics';
 
 // Pages
 import { HomePage } from './pages/Home/HomePage';
@@ -17,9 +19,13 @@ import { AccountPage } from './pages/Account/AccountPage';
 import { AdminPage } from './pages/Admin/AdminPage';
 import { PrivacyPolicyPage } from './pages/Privacy/PrivacyPolicyPage';
 import { SgiDirectoryPage } from './pages/SGI/SgiDirectoryPage';
+import { DividendCalendarPage } from './pages/Dividends/DividendCalendarPage';
 import { PriceAlertsManager } from './components/alerts/PriceAlertsManager';
+import { OnboardingTour } from './components/common/OnboardingTour';
+import { SEOHead } from './components/common/SEOHead';
 
-export default function App() {
+function AppContent() {
+  const { user } = useAuth();
   const [currentPath, setCurrentPath] = useState<string>(() => {
     return window.location.pathname + window.location.search;
   });
@@ -32,10 +38,33 @@ export default function App() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
+  useEffect(() => {
+    const [pathOnly] = currentPath.split('?');
+    const pageTitleMap: Record<string, string> = {
+      '/': 'Accueil',
+      '/search': 'Recherche',
+      '/simulation': 'Simulateur DCA',
+      '/alerts': 'Gestion des Alertes',
+      '/comparison': 'Comparateur de Valeurs',
+      '/learning': 'Guide & Modules BRVM',
+      '/auth': 'Connexion & Inscription',
+      '/account': 'Mon Espace Client BRVM',
+      '/espace-client': 'Mon Espace Client BRVM',
+      '/client': 'Mon Espace Client BRVM',
+      '/admin': 'Dashboard Admin & Analytics',
+      '/privacy': 'Politique de Confidentialité',
+      '/sgi': 'Annuaire Officiel des SGI',
+      '/calendrier-dividendes': 'Calendrier des Dividendes BRVM',
+      '/dividendes': 'Calendrier des Dividendes BRVM',
+    };
+    const title = pageTitleMap[pathOnly] || (pathOnly.startsWith('/company/') ? 'Fiche Entreprise' : 'Page');
+    trackPageView(currentPath, title, user);
+  }, [currentPath, user]);
+
   const navigate = (path: string) => {
     window.history.pushState({}, '', path);
     setCurrentPath(path);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo(0, 0);
   };
 
   // Helper route parser
@@ -57,7 +86,7 @@ export default function App() {
       return <CompanyDetailPage symbol={symbol} onNavigate={navigate} />;
     }
 
-    if (pathOnly === '/simulation') {
+    if (pathOnly === '/simulation' || pathOnly === '/profil-investisseur' || pathOnly === '/calculateur-frais' || pathOnly === '/guide-pas-a-pas') {
       const symbol = queryParams.get('symbol') || undefined;
       return <SimulationPage initialSymbol={symbol} onNavigate={navigate} />;
     }
@@ -80,7 +109,7 @@ export default function App() {
       return <AuthPage onNavigate={navigate} />;
     }
 
-    if (pathOnly.startsWith('/account')) {
+    if (pathOnly.startsWith('/account') || pathOnly.startsWith('/espace-client') || pathOnly.startsWith('/client')) {
       return <AccountPage onNavigate={navigate} />;
     }
 
@@ -96,23 +125,37 @@ export default function App() {
       return <SgiDirectoryPage onNavigate={navigate} />;
     }
 
+    if (pathOnly === '/calendrier-dividendes' || pathOnly === '/dividendes') {
+      return <DividendCalendarPage onNavigate={navigate} />;
+    }
+
     // Default Fallback Page
     return <HomePage onNavigate={navigate} />;
   };
 
   return (
+    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans antialiased transition-colors">
+      <SEOHead currentPath={currentPath} />
+      <Navbar currentPath={currentPath} onNavigate={navigate} />
+
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        {renderPage()}
+      </main>
+
+      <Footer onNavigate={navigate} />
+      <BottomNav currentPath={currentPath} onNavigate={navigate} />
+      <OnboardingTour onNavigate={navigate} />
+    </div>
+  );
+}
+
+export default function App() {
+  return (
     <ThemeProvider>
       <AuthProvider>
-        <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans antialiased transition-colors">
-          <Navbar currentPath={currentPath} onNavigate={navigate} />
-
-          <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-            {renderPage()}
-          </main>
-
-          <Footer onNavigate={navigate} />
-          <BottomNav currentPath={currentPath} onNavigate={navigate} />
-        </div>
+        <MarketProvider>
+          <AppContent />
+        </MarketProvider>
       </AuthProvider>
     </ThemeProvider>
   );

@@ -2,11 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { DEMO_COMPANIES, DEMO_HISTORICAL_PRICES } from '../../data/demo-data';
 import { ComparisonChart } from '../../components/charts/ComparisonChart';
 import { DividendYieldComparer } from '../../components/finance/DividendYieldComparer';
+import { StockPerformanceOverlay } from '../../components/finance/StockPerformanceOverlay';
 import { Button } from '../../components/ui/Button';
 import { SkeletonChart, SkeletonTable } from '../../components/ui/Skeleton';
 import { formatFCFA, formatPercent } from '../../lib/formatters';
 import { calculatePER, calculateROE, calculatePBR } from '../../lib/calculations';
 import { useAuth } from '../../features/auth/AuthContext';
+import { DailyMarketSessionBadge } from '../../components/finance/DailyMarketSessionBadge';
+import { useMarketData } from '../../features/market/MarketContext';
 import {
   BarChart2,
   Plus,
@@ -30,7 +33,8 @@ interface ComparisonPageProps {
 
 export const ComparisonPage: React.FC<ComparisonPageProps> = ({ initialSymbol, onNavigate }) => {
   const { isAuthenticated } = useAuth();
-  const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'DIVIDENDS'>('OVERVIEW');
+  const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'OVERLAY' | 'DIVIDENDS'>('OVERVIEW');
+  const [overviewChartMode, setOverviewChartMode] = useState<'STANDARD' | 'OVERLAY_1V1'>('STANDARD');
   const [selectedSymbols, setSelectedSymbols] = useState<string[]>(() => {
     return initialSymbol ? [initialSymbol] : [];
   });
@@ -63,9 +67,11 @@ export const ComparisonPage: React.FC<ComparisonPageProps> = ({ initialSymbol, o
     setTimeout(() => setLoading(false), 250);
   };
 
+  const { companies, historicalPrices: allHistoricalPrices, marketSession } = useMarketData();
+
   const companiesToCompare = selectedSymbols.map(sym => {
-    const company = DEMO_COMPANIES.find(c => c.symbol === sym) || DEMO_COMPANIES[0];
-    const prices = DEMO_HISTORICAL_PRICES[sym] || [];
+    const company = companies.find(c => c.symbol === sym) || DEMO_COMPANIES.find(c => c.symbol === sym) || DEMO_COMPANIES[0];
+    const prices = allHistoricalPrices[sym] || DEMO_HISTORICAL_PRICES[sym] || [];
     return {
       company,
       prices,
@@ -97,55 +103,105 @@ export const ComparisonPage: React.FC<ComparisonPageProps> = ({ initialSymbol, o
 
   return (
     <div className="space-y-8 pb-12">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">Comparateur d’Entreprises BRVM</h1>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Mettez en concurrence les actions de la BRVM pour comparer leur performance, valorisation et historique de dividendes.
-          </p>
-        </div>
+      {/* Section 1: Hero Banner (Vert Foncé) */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-emerald-950 via-teal-950 to-emerald-900 text-white rounded-3xl p-6 sm:p-10 shadow-2xl border-2 border-emerald-800">
+        <div className="absolute -right-20 -top-20 w-80 h-80 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -left-20 -bottom-20 w-80 h-80 bg-teal-500/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.12),transparent_50%)] pointer-events-none" />
 
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={handleRefresh}
-          disabled={loading || selectedSymbols.length === 0}
-          className="shrink-0 text-xs font-bold text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/50"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${loading ? 'animate-spin' : ''}`} />
-          {loading ? 'Calcul...' : 'Rafraîchir la comparaison'}
-        </Button>
-      </div>
+        <div className="relative z-10 max-w-4xl space-y-4">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-900/90 border border-emerald-500/50 text-emerald-300 text-xs font-black uppercase tracking-wider shadow-sm">
+            <BarChart2 className="w-3.5 h-3.5 text-emerald-400" />
+            BENCHMARK COMPARATIF & ANALYSE BRVM
+          </div>
+
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight text-white font-['Outfit']">
+            Comparateur d’Entreprises BRVM
+          </h1>
+
+          <p className="text-sm sm:text-base text-emerald-100/90 font-normal leading-relaxed">
+            Mettez en concurrence jusqu’à 3 sociétés cotées sur la BRVM. Comparez leurs cours en direct, PER, rendements de dividendes, marges nettes et retours sur fonds propres (ROE).
+          </p>
+
+          <div className="p-3 sm:p-3.5 rounded-2xl bg-emerald-900/60 border border-emerald-700/60 flex flex-wrap items-center justify-between gap-3 text-xs shadow-inner">
+            <div className="flex items-center gap-2">
+              <span className="flex h-2.5 w-2.5 relative">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400" />
+              </span>
+              <span className="text-emerald-200 font-bold">Sélection active :</span>
+              <span className="font-black text-white">{selectedSymbols.length} / 3 entreprises</span>
+              {selectedSymbols.length > 0 && (
+                <span className="text-emerald-300 font-extrabold bg-emerald-800/80 px-2 py-0.5 rounded-md border border-emerald-600/50">
+                  {selectedSymbols.join(' vs ')}
+                </span>
+              )}
+            </div>
+
+            <button
+              onClick={handleRefresh}
+              disabled={loading || selectedSymbols.length === 0}
+              className="px-4 py-1.5 rounded-full bg-amber-400 hover:bg-amber-300 text-emerald-950 font-black text-xs transition-transform hover:scale-105 active:scale-95 cursor-pointer shadow-md flex items-center gap-1.5 disabled:opacity-50"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+              <span>{loading ? 'Calcul...' : 'Rafraîchir les ratios'}</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Daily Live Market Session Bar */}
+      <DailyMarketSessionBadge />
 
       {/* Navigation Tabs */}
-      <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-1">
+      <div className="p-1.5 bg-slate-200/60 dark:bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-300/60 dark:border-slate-700/60 flex flex-wrap gap-2 shadow-xs">
         <button
           onClick={() => setActiveTab('OVERVIEW')}
-          className={`px-4 py-2.5 rounded-2xl text-xs font-black transition cursor-pointer flex items-center gap-2 ${
+          className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold transition-all cursor-pointer flex items-center gap-2 ${
             activeTab === 'OVERVIEW'
-              ? 'bg-emerald-600 text-white shadow-xs'
-              : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
+              ? 'bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-400 shadow-md ring-1 ring-emerald-500/30'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-700/50'
           }`}
         >
-          <BarChart2 className="w-4 h-4" />
-          Comparateur Global & Ratios
+          <BarChart2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+          <span>Comparateur Global & Ratios</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('OVERLAY')}
+          className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold transition-all cursor-pointer flex items-center gap-2 ${
+            activeTab === 'OVERLAY'
+              ? 'bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-400 shadow-md ring-1 ring-emerald-500/30'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-700/50'
+          }`}
+        >
+          <Layers className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+          <span>Superposition Graphique (2 Actions)</span>
+          <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-black">
+            1v1 Interactif
+          </span>
         </button>
 
         <button
           onClick={() => setActiveTab('DIVIDENDS')}
-          className={`px-4 py-2.5 rounded-2xl text-xs font-black transition cursor-pointer flex items-center gap-2 ${
+          className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold transition-all cursor-pointer flex items-center gap-2 ${
             activeTab === 'DIVIDENDS'
-              ? 'bg-emerald-600 text-white shadow-xs'
-              : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
+              ? 'bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-400 shadow-md ring-1 ring-emerald-500/30'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-700/50'
           }`}
         >
-          <Coins className="w-4 h-4" />
-          Rendements & Dividendes Historiques
+          <Coins className="w-4 h-4 text-amber-500 shrink-0" />
+          <span>Rendements & Dividendes Historiques</span>
         </button>
       </div>
 
-      {activeTab === 'DIVIDENDS' ? (
+      {activeTab === 'OVERLAY' ? (
+        <StockPerformanceOverlay
+          initialSymbolA={selectedSymbols[0] || 'SNTS'}
+          initialSymbolB={selectedSymbols[1] || 'ORAC'}
+          onNavigate={onNavigate}
+        />
+      ) : activeTab === 'DIVIDENDS' ? (
         <DividendYieldComparer
           selectedSymbols={selectedSymbols}
           onSelectedSymbolsChange={setSelectedSymbols}
@@ -203,9 +259,9 @@ export const ComparisonPage: React.FC<ComparisonPageProps> = ({ initialSymbol, o
                     <option value="">
                       {selectedSymbols.length === 0 ? '+ Sélectionner une action...' : '+ Ajouter une autre action...'}
                     </option>
-                    {DEMO_COMPANIES.filter(c => !selectedSymbols.includes(c.symbol)).map(c => (
+                    {(companies && companies.length > 0 ? companies : DEMO_COMPANIES).filter(c => !selectedSymbols.includes(c.symbol)).map(c => (
                       <option key={c.symbol} value={c.symbol}>
-                        {c.name} ({c.symbol}) - {c.sector}
+                        {c.name} ({c.symbol}) - {formatFCFA(c.currentPrice)} ({c.dayChangePercent >= 0 ? `+${c.dayChangePercent}%` : `${c.dayChangePercent}%`})
                       </option>
                     ))}
                   </select>
@@ -239,9 +295,9 @@ export const ComparisonPage: React.FC<ComparisonPageProps> = ({ initialSymbol, o
                   className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs px-5 py-3 rounded-xl cursor-pointer transition shadow-sm outline-none"
                 >
                   <option value="" className="text-slate-900 bg-white">+ Choisir une première action à comparer...</option>
-                  {DEMO_COMPANIES.map(c => (
+                  {(companies && companies.length > 0 ? companies : DEMO_COMPANIES).map(c => (
                     <option key={c.symbol} value={c.symbol} className="text-slate-900 bg-white">
-                      {c.name} ({c.symbol}) - {c.sector}
+                      {c.name} ({c.symbol}) - {formatFCFA(c.currentPrice)} ({c.dayChangePercent >= 0 ? `+${c.dayChangePercent}%` : `${c.dayChangePercent}%`})
                     </option>
                   ))}
                 </select>
@@ -273,7 +329,47 @@ export const ComparisonPage: React.FC<ComparisonPageProps> = ({ initialSymbol, o
                 </div>
               )}
 
-              {/* Comparison Chart or Skeleton */}
+              {/* 1v1 Duel Superposition Callout Banner when 2 stocks are selected */}
+              {selectedSymbols.length === 2 && (
+                <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-emerald-950 via-teal-950 to-emerald-900 text-white border-2 border-emerald-700/80 shadow-md flex flex-col md:flex-row items-center justify-between gap-4">
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-11 h-11 rounded-2xl bg-amber-400 text-slate-900 flex items-center justify-center font-black shrink-0 shadow-sm">
+                      <Layers className="w-6 h-6 text-slate-950" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] font-black uppercase text-amber-300">Face-à-Face 1v1 Détecté</span>
+                        <span className="text-xs bg-emerald-800/80 px-2 py-0.5 rounded-md font-bold text-emerald-200">
+                          {selectedSymbols[0]} vs {selectedSymbols[1]}
+                        </span>
+                      </div>
+                      <p className="text-xs text-emerald-100/90 mt-0.5">
+                        Superposez leurs courbes historiques en % ou en FCFA, comparez l'écart d'alpha et analysez leur corrélation dans l'outil interactif.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+                    <button
+                      type="button"
+                      onClick={() => setOverviewChartMode(overviewChartMode === 'OVERLAY_1V1' ? 'STANDARD' : 'OVERLAY_1V1')}
+                      className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20 transition cursor-pointer"
+                    >
+                      {overviewChartMode === 'OVERLAY_1V1' ? 'Afficher Graphique Standard' : 'Superposer Directement Ici'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('OVERLAY')}
+                      className="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs flex items-center gap-1.5 transition-transform hover:scale-105 active:scale-95 shadow-sm cursor-pointer"
+                    >
+                      <span>Ouvrir l'Outil Dédié</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Comparison Chart or Skeleton or Inline 1v1 Overlay */}
               {loading ? (
                 <div className="space-y-6">
                   <SkeletonChart />
@@ -281,6 +377,12 @@ export const ComparisonPage: React.FC<ComparisonPageProps> = ({ initialSymbol, o
                     <SkeletonTable rows={5} />
                   </div>
                 </div>
+              ) : selectedSymbols.length === 2 && overviewChartMode === 'OVERLAY_1V1' ? (
+                <StockPerformanceOverlay
+                  initialSymbolA={selectedSymbols[0]}
+                  initialSymbolB={selectedSymbols[1]}
+                  onNavigate={onNavigate}
+                />
               ) : (
                 <ComparisonChart companies={chartDataCompanies} />
               )}
@@ -312,7 +414,7 @@ export const ComparisonPage: React.FC<ComparisonPageProps> = ({ initialSymbol, o
                     </div>
                     <button
                       onClick={() => onNavigate('/auth')}
-                      className="shrink-0 px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-extrabold text-xs cursor-pointer shadow-2xs transition"
+                      className="shrink-0 px-5 py-2 rounded-full bg-amber-500 hover:bg-emerald-600 text-white font-bold text-xs cursor-pointer shadow-xs transition-all active:scale-[0.98]"
                     >
                       Se connecter
                     </button>

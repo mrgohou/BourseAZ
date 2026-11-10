@@ -3,9 +3,10 @@ import { DemoMarketDataProvider } from './DemoMarketDataProvider';
 import { BrvmApiMarketDataProvider } from './BrvmApiMarketDataProvider';
 import { BrvmFileImportProvider } from './BrvmFileImportProvider';
 import { BrvmGithubPlatformProvider } from './BrvmGithubPlatformProvider';
+import { RichBourseMarketDataProvider } from './RichBourseMarketDataProvider';
 
 export function getActiveMarketDataProvider(): MarketDataProvider {
-  const providerType = (process.env.BRVM_DATA_PROVIDER || 'brvm-data-platform').toLowerCase().trim();
+  const providerType = (process.env.BRVM_DATA_PROVIDER || 'richbourse').toLowerCase().trim();
 
   if (providerType === 'api') {
     const baseUrl = process.env.BRVM_API_BASE_URL;
@@ -18,8 +19,16 @@ export function getActiveMarketDataProvider(): MarketDataProvider {
     return new BrvmFileImportProvider();
   }
 
-  // Default real BRVM data provider (Kyac99/brvm-data-platform)
-  return new BrvmGithubPlatformProvider();
+  if (providerType === 'github' || providerType === 'brvm-data-platform') {
+    return new BrvmGithubPlatformProvider();
+  }
+
+  if (providerType === 'demo') {
+    return new DemoMarketDataProvider();
+  }
+
+  // Default provider: RichBourse Live Variations (https://www.richbourse.com/common/variation/index)
+  return new RichBourseMarketDataProvider();
 }
 
 export * from './MarketDataProvider';
@@ -27,4 +36,5 @@ export * from './DemoMarketDataProvider';
 export * from './BrvmApiMarketDataProvider';
 export * from './BrvmFileImportProvider';
 export * from './BrvmGithubPlatformProvider';
+export * from './RichBourseMarketDataProvider';
 

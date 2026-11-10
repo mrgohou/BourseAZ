@@ -7,7 +7,8 @@ import { useAuth } from '../../features/auth/AuthContext';
 import { SGIDirectoryModule } from '../../components/learning/SGIDirectoryModule';
 import { InteractiveGlossary } from '../../components/learning/InteractiveGlossary';
 import { GuidedPathway } from '../../components/learning/GuidedPathway';
-import { BookOpen, CheckCircle, ArrowRight, Award, Calculator, Clock, HelpCircle, Building2, ShieldCheck, Sparkles, Compass } from 'lucide-react';
+import { SmartGlossaryText } from '../../components/common/SmartGlossaryText';
+import { BookOpen, CheckCircle, ArrowRight, Award, Calculator, Clock, HelpCircle, Building2, ShieldCheck, Sparkles, Compass, Lightbulb } from 'lucide-react';
 
 interface LearningPageProps {
   onNavigate: (path: string) => void;
@@ -40,45 +41,68 @@ export const LearningPage: React.FC<LearningPageProps> = ({ onNavigate }) => {
 
   return (
     <div className="space-y-8 pb-12">
-      {/* Header Banner */}
-      <div className="bg-gradient-to-r from-blue-900 via-blue-800 to-indigo-900 text-white rounded-3xl p-6 sm:p-10 shadow-xl space-y-4">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-800 text-blue-200 text-xs font-bold border border-blue-700">
-          <BookOpen className="w-3.5 h-3.5 text-amber-400" />
-          Académie Pédagogique BRVM
+      {/* Section 1: Hero Banner (Vert Foncé) */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-emerald-950 via-teal-950 to-emerald-900 text-white rounded-3xl p-6 sm:p-10 shadow-2xl border-2 border-emerald-800">
+        <div className="absolute -right-20 -top-20 w-80 h-80 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -left-20 -bottom-20 w-80 h-80 bg-teal-500/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.12),transparent_50%)] pointer-events-none" />
+
+        <div className="relative z-10 max-w-4xl space-y-4">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-900/90 border border-emerald-500/50 text-emerald-300 text-xs font-black uppercase tracking-wider shadow-sm">
+            <BookOpen className="w-3.5 h-3.5 text-emerald-400" />
+            ACADEMIE PEDAGOGIQUE & GUIDE BRVM
+          </div>
+
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight text-white font-['Outfit']">
+            Apprendre la Bourse pas à pas
+          </h1>
+
+          <p className="text-sm sm:text-base text-emerald-100/90 font-normal leading-relaxed">
+            Un parcours structuré en 10 modules interactifs pour maîtriser le vocabulaire financier, comprendre les bilans boursiers et faire vos premiers pas en toute confiance.
+          </p>
+
+          {/* Overall Progress Bar in Dark Green container */}
+          <div className="p-4 rounded-2xl bg-emerald-900/60 border border-emerald-700/60 max-w-xl space-y-2 shadow-inner">
+            <div className="flex justify-between text-xs font-bold text-emerald-200">
+              <span className="flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                Progression globale : {progressPercent}%
+              </span>
+              <span className="text-white font-black">{completedCount} / {DEMO_LEARNING_MODULES.length} validés</span>
+            </div>
+            <div className="w-full bg-emerald-950 rounded-full h-3 overflow-hidden border border-emerald-800">
+              <div
+                className="bg-gradient-to-r from-emerald-400 via-teal-300 to-amber-300 h-full transition-all duration-500 rounded-full"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+          </div>
         </div>
+      </section>
 
-        <h1 className="text-2xl sm:text-4xl font-black">Apprendre la Bourse pas à pas</h1>
-        <p className="text-xs sm:text-sm text-slate-200 max-w-2xl leading-relaxed">
-          Un parcours structuré en 10 modules courts pour maîtriser le vocabulaire financier, comprendre les bilans et faire vos premiers pas en toute confiance.
-        </p>
-
-        {/* Overall Progress Bar */}
-        <div className="pt-2 max-w-xl">
-          <div className="flex justify-between text-xs font-bold text-slate-300 mb-1.5">
-            <span>Progression globale : {progressPercent} %</span>
-            <span>{completedCount} / {DEMO_LEARNING_MODULES.length} modules validés</span>
-          </div>
-          <div className="w-full bg-blue-950 rounded-full h-3 overflow-hidden border border-blue-800">
-            <div
-              className="bg-gradient-to-r from-emerald-400 to-teal-300 h-full transition-all duration-500 rounded-full"
-              style={{ width: `${progressPercent}%` }}
-            />
-          </div>
+      {/* Pedagogical Hint Banner for Interactive Glossary */}
+      <div className="flex items-center gap-3 p-3.5 sm:p-4 rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/60 text-xs text-emerald-950 dark:text-emerald-200 shadow-xs">
+        <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 shrink-0">
+          <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400 animate-pulse" />
+        </div>
+        <div className="leading-relaxed">
+          <strong className="font-extrabold text-emerald-900 dark:text-emerald-100">Glossaire Interactif Intégré : </strong>
+          Tous les termes financiers soulignés en <span className="underline decoration-dashed decoration-emerald-500 font-bold">pointillés</span> affichent une définition simplifiée et sans jargon au survol ou au clic.
         </div>
       </div>
 
       {/* Module Navigation Tabs */}
-      <div className="flex flex-wrap border-b border-slate-200 dark:border-slate-800 gap-3 sm:gap-6">
+      <div className="p-1.5 bg-slate-200/60 dark:bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-300/60 dark:border-slate-700/60 flex flex-wrap gap-2 shadow-xs">
         <button
           onClick={() => setActiveTab('pathway')}
-          className={`pb-3 text-sm font-extrabold border-b-2 transition-colors cursor-pointer flex items-center gap-2 ${
+          className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold transition-all cursor-pointer flex items-center gap-2 ${
             activeTab === 'pathway'
-              ? 'border-emerald-600 text-emerald-700 dark:border-emerald-500 dark:text-emerald-400'
-              : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+              ? 'bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-400 shadow-md ring-1 ring-emerald-500/30'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-700/50'
           }`}
         >
-          <Compass className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-          Parcours Guidé Débutant
+          <Compass className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+          <span>Parcours Guidé Débutant</span>
           <span className="text-[10px] bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-extrabold px-2 py-0.5 rounded-full">
             Pas à Pas
           </span>
@@ -86,38 +110,38 @@ export const LearningPage: React.FC<LearningPageProps> = ({ onNavigate }) => {
 
         <button
           onClick={() => setActiveTab('modules')}
-          className={`pb-3 text-sm font-extrabold border-b-2 transition-colors cursor-pointer flex items-center gap-2 ${
+          className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold transition-all cursor-pointer flex items-center gap-2 ${
             activeTab === 'modules'
-              ? 'border-blue-700 text-blue-700 dark:border-blue-500 dark:text-blue-400'
-              : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+              ? 'bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-400 shadow-md ring-1 ring-blue-500/30'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-700/50'
           }`}
         >
-          <BookOpen className="w-4 h-4" />
-          Modules & Leçons ({DEMO_LEARNING_MODULES.length})
+          <BookOpen className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
+          <span>Modules & Leçons ({DEMO_LEARNING_MODULES.length})</span>
         </button>
 
         <button
           onClick={() => setActiveTab('glossary')}
-          className={`pb-3 text-sm font-extrabold border-b-2 transition-colors cursor-pointer flex items-center gap-2 ${
+          className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold transition-all cursor-pointer flex items-center gap-2 ${
             activeTab === 'glossary'
-              ? 'border-blue-700 text-blue-700 dark:border-blue-500 dark:text-blue-400'
-              : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+              ? 'bg-white dark:bg-slate-900 text-amber-700 dark:text-amber-400 shadow-md ring-1 ring-amber-500/30'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-700/50'
           }`}
         >
-          <Sparkles className="w-4 h-4 text-amber-500" />
-          Glossaire Boursier
+          <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
+          <span>Glossaire Boursier</span>
         </button>
 
         <button
           onClick={() => setActiveTab('sgi')}
-          className={`pb-3 text-sm font-extrabold border-b-2 transition-colors cursor-pointer flex items-center gap-2 ${
+          className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold transition-all cursor-pointer flex items-center gap-2 ${
             activeTab === 'sgi'
-              ? 'border-blue-700 text-blue-700 dark:border-blue-500 dark:text-blue-400'
-              : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+              ? 'bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-400 shadow-md ring-1 ring-emerald-500/30'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-700/50'
           }`}
         >
-          <ShieldCheck className="w-4 h-4 text-emerald-600" />
-          Annuaire SGI
+          <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+          <span>Annuaire SGI</span>
         </button>
       </div>
 
@@ -195,22 +219,38 @@ export const LearningPage: React.FC<LearningPageProps> = ({ onNavigate }) => {
         >
           <div className="space-y-6 text-slate-800">
             {/* Key Takeaway */}
-            <div className="p-4 rounded-xl bg-blue-50 border border-blue-200 text-xs font-bold text-blue-900">
-              💡 À retenir : {selectedModule.content.keyTakeaway}
+            <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 text-xs font-bold text-blue-900 dark:text-blue-200">
+              💡 À retenir : <SmartGlossaryText text={selectedModule.content.keyTakeaway} onNavigateToGlossary={() => { setSelectedModule(null); setActiveTab('glossary'); }} />
             </div>
 
             {/* Paragraphs */}
-            <div className="space-y-3 text-xs sm:text-sm text-slate-700 leading-relaxed font-medium">
+            <div className="space-y-3 text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed font-medium">
               {selectedModule.content.fullText.map((p, i) => (
-                <p key={i}>{p}</p>
+                <p key={i}>
+                  <SmartGlossaryText
+                    text={p}
+                    onNavigateToGlossary={() => {
+                      setSelectedModule(null);
+                      setActiveTab('glossary');
+                    }}
+                  />
+                </p>
               ))}
             </div>
 
             {/* Example in FCFA */}
             {selectedModule.content.exampleFcfa && (
-              <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-950 font-semibold space-y-1">
-                <span className="font-extrabold block text-amber-900">Exemple concret en FCFA :</span>
-                <div>{selectedModule.content.exampleFcfa}</div>
+              <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800/80 text-xs text-amber-950 dark:text-amber-200 font-semibold space-y-1">
+                <span className="font-extrabold block text-amber-900 dark:text-amber-300">Exemple concret en FCFA :</span>
+                <div>
+                  <SmartGlossaryText
+                    text={selectedModule.content.exampleFcfa}
+                    onNavigateToGlossary={() => {
+                      setSelectedModule(null);
+                      setActiveTab('glossary');
+                    }}
+                  />
+                </div>
               </div>
             )}
 

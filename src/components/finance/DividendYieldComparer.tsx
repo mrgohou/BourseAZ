@@ -12,6 +12,7 @@ import {
   Legend,
 } from 'recharts';
 import { DEMO_COMPANIES } from '../../data/demo-data';
+import { useMarketData } from '../../features/market/MarketContext';
 import { formatFCFA, formatPercent } from '../../lib/formatters';
 import {
   Percent,
@@ -54,7 +55,7 @@ export const DIVIDEND_HISTORIES: Record<string, HistoricalDividendRecord[]> = {
     { year: 2022, dividend: 750, eps: 1120, price: 12500, payoutRatio: 67.0, yieldPercent: 6.00 },
     { year: 2023, dividend: 820, eps: 1280, price: 14800, payoutRatio: 64.1, yieldPercent: 5.54 },
     { year: 2024, dividend: 1010, eps: 1420, price: 16500, payoutRatio: 71.1, yieldPercent: 6.12 },
-    { year: 2025, dividend: 1350, eps: 1820, price: 18200, payoutRatio: 74.2, yieldPercent: 7.42 },
+    { year: 2025, dividend: 1350, eps: 1820, price: 39000, payoutRatio: 74.2, yieldPercent: 3.46 },
   ],
   TTLCI: [
     { year: 2021, dividend: 140, eps: 170, price: 1650, payoutRatio: 82.4, yieldPercent: 8.48 },
@@ -75,7 +76,7 @@ export const DIVIDEND_HISTORIES: Record<string, HistoricalDividendRecord[]> = {
     { year: 2022, dividend: 230, eps: 275, price: 2250, payoutRatio: 83.6, yieldPercent: 10.22 },
     { year: 2023, dividend: 245, eps: 285, price: 2350, payoutRatio: 86.0, yieldPercent: 10.43 },
     { year: 2024, dividend: 260, eps: 310, price: 2450, payoutRatio: 83.9, yieldPercent: 10.61 },
-    { year: 2025, dividend: 280, eps: 330, price: 2550, payoutRatio: 84.8, yieldPercent: 10.98 },
+    { year: 2025, dividend: 280, eps: 330, price: 2910, payoutRatio: 84.8, yieldPercent: 9.62 },
   ],
   BOAC: [
     { year: 2021, dividend: 360, eps: 520, price: 4800, payoutRatio: 69.2, yieldPercent: 7.50 },
@@ -89,7 +90,7 @@ export const DIVIDEND_HISTORIES: Record<string, HistoricalDividendRecord[]> = {
     { year: 2022, dividend: 125, eps: 170, price: 1900, payoutRatio: 73.5, yieldPercent: 6.58 },
     { year: 2023, dividend: 135, eps: 180, price: 2100, payoutRatio: 75.0, yieldPercent: 6.43 },
     { year: 2024, dividend: 150, eps: 210, price: 2250, payoutRatio: 71.4, yieldPercent: 6.67 },
-    { year: 2025, dividend: 165, eps: 230, price: 2350, payoutRatio: 71.7, yieldPercent: 7.02 },
+    { year: 2025, dividend: 165, eps: 230, price: 5150, payoutRatio: 71.7, yieldPercent: 3.20 },
   ],
   PALC: [
     { year: 2021, dividend: 350, eps: 480, price: 4500, payoutRatio: 72.9, yieldPercent: 7.78 },
@@ -154,6 +155,7 @@ export const DividendYieldComparer: React.FC<DividendYieldComparerProps> = ({
     setInternalSymbols(symbols);
   };
 
+  const { companies } = useMarketData();
   const [metric, setMetric] = useState<ComparisonMetric>('YIELD');
   const [investmentAmount, setInvestmentAmount] = useState<number>(1000000); // 1.000.000 FCFA
 
@@ -196,7 +198,7 @@ export const DividendYieldComparer: React.FC<DividendYieldComparerProps> = ({
   // Selected companies details
   const selectedCompanies = useMemo(() => {
     return selectedSymbols.map((sym) => {
-      const company = DEMO_COMPANIES.find((c) => c.symbol === sym) || DEMO_COMPANIES[0];
+      const company = (companies && companies.length > 0 ? companies : DEMO_COMPANIES).find((c) => c.symbol === sym) || DEMO_COMPANIES[0];
       const history = getDividendHistory(sym);
       const latestRec = history[history.length - 1] || { yieldPercent: 0, payoutRatio: 0, dividend: 0 };
       const firstRec = history[0] || { dividend: 1 };
@@ -333,13 +335,13 @@ export const DividendYieldComparer: React.FC<DividendYieldComparerProps> = ({
                       ? '+ Sélectionner une action dans la liste déroulante...'
                       : '+ Ajouter une autre action (liste déroulante)...'}
                   </option>
-                  {DEMO_COMPANIES.map((c) => (
+                  {(companies && companies.length > 0 ? companies : DEMO_COMPANIES).map((c) => (
                     <option
                       key={c.symbol}
                       value={c.symbol}
                       disabled={selectedSymbols.includes(c.symbol)}
                     >
-                      {c.name} ({c.symbol}) - {c.sector} {selectedSymbols.includes(c.symbol) ? '✓' : ''}
+                      {c.name} ({c.symbol}) - {formatFCFA(c.currentPrice)} ({c.dividendYield ? `${c.dividendYield}% rdt` : ''}) {selectedSymbols.includes(c.symbol) ? '✓' : ''}
                     </option>
                   ))}
                 </select>

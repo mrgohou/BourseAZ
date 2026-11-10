@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { DEMO_COMPANIES } from '../../data/demo-data';
+import { useMarketData } from '../../features/market/MarketContext';
 import { Company } from '../../types';
 import { formatFCFA, formatPercent } from '../../lib/formatters';
 import { useAuth } from '../../features/auth/AuthContext';
@@ -53,11 +54,12 @@ export const InvestmentPlanModule: React.FC<InvestmentPlanModuleProps> = ({
   const [annualGrowthRate, setAnnualGrowthRate] = useState<number>(6.0); // 6% annual share price growth
   const [targetGoalAmount, setTargetGoalAmount] = useState<number>(5000000); // 5M FCFA for target mode
   const [savedSuccess, setSavedSuccess] = useState(false);
+  const { companies } = useMarketData();
 
   const selectedCompany: Company | undefined = useMemo(() => {
     if (!selectedSymbol) return undefined;
-    return DEMO_COMPANIES.find(c => c.symbol === selectedSymbol);
-  }, [selectedSymbol]);
+    return (companies && companies.length > 0 ? companies : DEMO_COMPANIES).find(c => c.symbol === selectedSymbol);
+  }, [selectedSymbol, companies]);
 
   // Estimate annual dividend yield for chosen company
   const dividendYieldPercent = useMemo(() => {
@@ -309,7 +311,7 @@ export const InvestmentPlanModule: React.FC<InvestmentPlanModuleProps> = ({
               className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-900 dark:text-white outline-none focus:border-emerald-500 cursor-pointer"
             >
               <option value="">-- Choisir une entreprise à simuler --</option>
-              {DEMO_COMPANIES.map(comp => (
+              {(companies && companies.length > 0 ? companies : DEMO_COMPANIES).map(comp => (
                 <option key={comp.symbol} value={comp.symbol}>
                   {comp.name} ({comp.symbol}) - {formatFCFA(comp.currentPrice)} ({comp.dividendYield ? `${comp.dividendYield}% div` : 'Agrégé'})
                 </option>

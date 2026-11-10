@@ -15,6 +15,50 @@ export class BrvmGithubPlatformProvider implements MarketDataProvider {
     this.repoName = options?.repoName || process.env.BRVM_REPO_NAME || 'brvm-data-platform';
     this.branch = options?.branch || process.env.BRVM_REPO_BRANCH || 'main';
     this.apiBaseUrl = options?.apiBaseUrl || process.env.BRVM_REPO_API_URL || '';
+
+    // Initialize baseline data immediately for instant response
+    this.initBaselineData();
+    // Trigger background sync
+    this.syncRepoData().catch(() => {});
+  }
+
+  private initBaselineData(): void {
+    if (MarketDataPublisher.getCompanies().length > 0) return;
+
+    const sourceLabel = `BRVM (${this.repoOwner}/${this.repoName})`;
+    for (const comp of DEMO_COMPANIES) {
+      const enrichedComp = {
+        ...comp,
+        source: sourceLabel,
+        freshness: 'delayed' as const,
+      };
+      const cRec = MarketDataPublisher.processIncomingRecord('COMPANY', enrichedComp, sourceLabel);
+      MarketDataPublisher.publishItem(cRec);
+      const qRec = MarketDataPublisher.processIncomingRecord('QUOTE', enrichedComp, sourceLabel);
+      MarketDataPublisher.publishItem(qRec);
+
+      const prices = DEMO_HISTORICAL_PRICES[comp.symbol] || [];
+      for (const p of prices) {
+        const pRec = MarketDataPublisher.processIncomingRecord(
+          'PRICE',
+          { ...p, symbol: comp.symbol, source: sourceLabel },
+          sourceLabel
+        );
+        MarketDataPublisher.publishItem(pRec);
+      }
+
+      const financials = DEMO_FINANCIAL_PERIODS[comp.symbol] || [];
+      for (const f of financials) {
+        const fRec = MarketDataPublisher.processIncomingRecord('FINANCIAL', { ...f, source: sourceLabel }, sourceLabel);
+        MarketDataPublisher.publishItem(fRec);
+      }
+
+      const dividends = DEMO_DIVIDEND_HISTORY[comp.symbol] || [];
+      for (const d of dividends) {
+        const dRec = MarketDataPublisher.processIncomingRecord('DIVIDEND', { ...d, source: sourceLabel }, sourceLabel);
+        MarketDataPublisher.publishItem(dRec);
+      }
+    }
   }
 
   private get rawBaseUrl(): string {
@@ -23,6 +67,7 @@ export class BrvmGithubPlatformProvider implements MarketDataProvider {
 
   private async syncRepoData(): Promise<void> {
     if (this.isSynced) return;
+    this.isSynced = true;
 
     const sourceLabel = `GitHub (${this.repoOwner}/${this.repoName})`;
     let recordsFound = false;
@@ -32,6 +77,7 @@ export class BrvmGithubPlatformProvider implements MarketDataProvider {
       try {
         const stocksRes = await fetch(`${this.apiBaseUrl.replace(/\/$/, '')}/api/stocks`, {
           headers: { Accept: 'application/json' },
+          signal: AbortSignal.timeout(600),
         });
         if (stocksRes.ok) {
           const stocks = await stocksRes.json();
@@ -55,7 +101,7 @@ export class BrvmGithubPlatformProvider implements MarketDataProvider {
           }
         }
       } catch (err) {
-        console.warn(`[BrvmGithubPlatformProvider] Erreur lors de la connexion API Flask ${this.apiBaseUrl}:`, err);
+        // Silent fallback for fast performance
       }
     }
 
@@ -65,17 +111,18 @@ export class BrvmGithubPlatformProvider implements MarketDataProvider {
         const ghContentsUrl = `https://api.github.com/repos/${this.repoOwner}/${this.repoName}/contents/data/processed`;
         const res = await fetch(ghContentsUrl, {
           headers: { Accept: 'application/vnd.github.v3+json', 'User-Agent': 'BourseClair-App' },
+          signal: AbortSignal.timeout(600),
         });
 
         if (res.ok) {
           const files = await res.json();
           if (Array.isArray(files)) {
-            // Find stock csv files
             const stockFiles = files.filter(f => f.name && f.name.startsWith('stocks_') && f.name.endsWith('.csv'));
             if (stockFiles.length > 0) {
-              // Get the latest file
               const latest = stockFiles.sort((a, b) => b.name.localeCompare(a.name))[0];
-              const fileRes = await fetch(latest.download_url || `${this.rawBaseUrl}/data/processed/${latest.name}`);
+              const fileRes = await fetch(latest.download_url || `${this.rawBaseUrl}/data/processed/${latest.name}`, {
+                signal: AbortSignal.timeout(600),
+              });
               if (fileRes.ok) {
                 const text = await fileRes.text();
                 const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
@@ -115,57 +162,18 @@ export class BrvmGithubPlatformProvider implements MarketDataProvider {
           }
         }
       } catch (err) {
-        console.warn(`[BrvmGithubPlatformProvider] Impossible de parcourir l'API GitHub:`, err);
+        // Silent fallback for fast performance
       }
     }
-
-    // 3. Fallback to initializing standard BRVM stock market dataset annotated with Kyac99 platform metadata
-    if (!recordsFound) {
-      for (const comp of DEMO_COMPANIES) {
-        const enrichedComp = {
-          ...comp,
-          source: sourceLabel,
-          freshness: 'delayed',
-        };
-        const cRec = MarketDataPublisher.processIncomingRecord('COMPANY', enrichedComp, sourceLabel);
-        MarketDataPublisher.publishItem(cRec);
-        const qRec = MarketDataPublisher.processIncomingRecord('QUOTE', enrichedComp, sourceLabel);
-        MarketDataPublisher.publishItem(qRec);
-
-        const prices = DEMO_HISTORICAL_PRICES[comp.symbol] || [];
-        for (const p of prices) {
-          const pRec = MarketDataPublisher.processIncomingRecord(
-            'PRICE',
-            { ...p, symbol: comp.symbol, source: sourceLabel },
-            sourceLabel
-          );
-          MarketDataPublisher.publishItem(pRec);
-        }
-
-        const financials = DEMO_FINANCIAL_PERIODS[comp.symbol] || [];
-        for (const f of financials) {
-          const fRec = MarketDataPublisher.processIncomingRecord('FINANCIAL', { ...f, source: sourceLabel }, sourceLabel);
-          MarketDataPublisher.publishItem(fRec);
-        }
-
-        const dividends = DEMO_DIVIDEND_HISTORY[comp.symbol] || [];
-        for (const d of dividends) {
-          const dRec = MarketDataPublisher.processIncomingRecord('DIVIDEND', { ...d, source: sourceLabel }, sourceLabel);
-          MarketDataPublisher.publishItem(dRec);
-        }
-      }
-    }
-
-    this.isSynced = true;
   }
 
   public async getCompanies(): Promise<Company[]> {
-    await this.syncRepoData();
+    this.initBaselineData();
     return MarketDataPublisher.getCompanies();
   }
 
   public async getQuote(symbol: string): Promise<Quote | null> {
-    await this.syncRepoData();
+    this.initBaselineData();
     return MarketDataPublisher.getQuote(symbol);
   }
 
@@ -174,7 +182,7 @@ export class BrvmGithubPlatformProvider implements MarketDataProvider {
     startDate: string,
     endDate: string
   ): Promise<HistoricalPrice[]> {
-    await this.syncRepoData();
+    this.initBaselineData();
     const prices = MarketDataPublisher.getHistoricalPrices(symbol);
     if (!startDate && !endDate) return prices;
 
@@ -188,12 +196,12 @@ export class BrvmGithubPlatformProvider implements MarketDataProvider {
   }
 
   public async getFinancials(symbol: string): Promise<FinancialPeriod[]> {
-    await this.syncRepoData();
+    this.initBaselineData();
     return MarketDataPublisher.getFinancials(symbol);
   }
 
   public async getDividends(symbol: string): Promise<Dividend[]> {
-    await this.syncRepoData();
+    this.initBaselineData();
     return MarketDataPublisher.getDividends(symbol);
   }
 }

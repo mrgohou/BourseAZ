@@ -56,27 +56,35 @@ export const PrivacyPolicyPage: React.FC<PrivacyPolicyPageProps> = ({ onNavigate
         </Button>
       </div>
 
-      {/* Main Banner */}
-      <div className="bg-gradient-to-br from-indigo-900 via-slate-900 to-slate-950 text-white rounded-2xl p-6 sm:p-8 shadow-xl border border-slate-800 space-y-4">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-xs font-semibold">
-          <ShieldCheck className="w-4 h-4 text-indigo-400" />
-          Protection des Données & Transparence
+      {/* Section 1: Hero Banner (Vert Foncé) */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-emerald-950 via-teal-950 to-emerald-900 text-white rounded-3xl p-6 sm:p-10 shadow-2xl border-2 border-emerald-800 space-y-4">
+        <div className="absolute -right-20 -top-20 w-80 h-80 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -left-20 -bottom-20 w-80 h-80 bg-teal-500/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.12),transparent_50%)] pointer-events-none" />
+
+        <div className="relative z-10 max-w-3xl space-y-4">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-900/90 border border-emerald-500/50 text-emerald-300 text-xs font-black uppercase tracking-wider shadow-sm">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+            PROTECTION DES DONNEES & TRANSPARENCE
+          </div>
+
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight text-white font-['Outfit']">
+            Politique de Confidentialité
+          </h1>
+
+          <p className="text-sm sm:text-base text-emerald-100/90 font-normal leading-relaxed">
+            Chez <strong className="text-white font-bold">Bourse Facile</strong>, la protection de vos données personnelles et simulations financières est notre priorité absolue. Cette politique explique en toute clarté quelles données sont collectées, comment elles sont sécurisées et vos droits conformément aux normes en vigueur.
+          </p>
+
+          <div className="p-3 rounded-2xl bg-emerald-900/60 border border-emerald-700/60 flex flex-wrap items-center gap-4 text-xs text-emerald-200/90 shadow-inner">
+            <span>Dernière mise à jour : <strong className="text-white">Novembre 2026</strong></span>
+            <span>•</span>
+            <span>Régulation : <strong className="text-white">UEMOA & AMF</strong></span>
+            <span>•</span>
+            <span>Chiffrement : <strong className="text-white">SSL 256-bit</strong></span>
+          </div>
         </div>
-
-        <h1 className="text-2xl sm:text-4xl font-black tracking-tight">
-          Politique de Confidentialité
-        </h1>
-
-        <p className="text-slate-300 text-sm sm:text-base leading-relaxed max-w-2xl">
-          Chez <strong>Bourse Facile</strong>, la protection de vos données personnelles et financières est notre priorité absolue. Cette politique explique en toute clarté quelles données sont collectées, comment elles sont sécurisées et vos droits conformément aux normes en vigueur.
-        </p>
-
-        <div className="pt-2 text-xs text-slate-400 flex flex-wrap gap-4 border-t border-slate-800/80">
-          <span>Dernière mise à jour : <strong>9 Février 2026</strong></span>
-          <span>•</span>
-          <span>Version : <strong>2.1 (Conforme Firebase & UEMOA)</strong></span>
-        </div>
-      </div>
+      </section>
 
       {/* Core Guarantees Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

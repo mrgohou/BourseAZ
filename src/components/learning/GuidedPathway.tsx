@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { GlossaryTerm } from '../common/GlossaryTerm';
 import {
   Compass,
   CheckCircle2,
@@ -79,20 +80,20 @@ export const GuidedPathway: React.FC<GuidedPathwayProps> = ({ onNavigate }) => {
       explanation: (
         <div className="space-y-4 text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
           <p>
-            La <strong>BRVM (Bourse Régionale des Valeurs Mobilières)</strong> est une bourse entièrement électronique basée à Abidjan. Elle permet aux particuliers et institutions d'investir dans le capital de grandes entreprises régionales comme <strong>Sonatel, Solibra, Ecobank, SGCI, ou Coris Bank</strong>.
+            La <GlossaryTerm termId="brvm">BRVM (Bourse Régionale des Valeurs Mobilières)</GlossaryTerm> est une bourse entièrement électronique basée à Abidjan. Elle permet aux particuliers et institutions d'investir dans le capital de grandes entreprises régionales comme <strong>Sonatel, Solibra, Ecobank, SGCI, ou Coris Bank</strong>.
           </p>
           <div className="p-4 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="flex items-start gap-2">
               <span className="w-6 h-6 rounded-lg bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-bold text-xs flex items-center justify-center shrink-0">1</span>
               <div>
-                <strong className="text-slate-900 dark:text-white block text-xs">Indice BRVM 30</strong>
+                <strong className="text-slate-900 dark:text-white block text-xs"><GlossaryTerm termId="indices-brvm">Indice BRVM 30</GlossaryTerm></strong>
                 <span className="text-[11px] text-slate-500 dark:text-slate-400">Regroupe les 30 valeurs les plus liquides du marché.</span>
               </div>
             </div>
             <div className="flex items-start gap-2">
               <span className="w-6 h-6 rounded-lg bg-indigo-100 dark:bg-indigo-950 text-indigo-800 dark:text-indigo-300 font-bold text-xs flex items-center justify-center shrink-0">2</span>
               <div>
-                <strong className="text-slate-900 dark:text-white block text-xs">Indice BRVM Composite</strong>
+                <strong className="text-slate-900 dark:text-white block text-xs"><GlossaryTerm termId="indices-brvm">Indice BRVM Composite</GlossaryTerm></strong>
                 <span className="text-[11px] text-slate-500 dark:text-slate-400">Reflète la performance de toutes les sociétés cotées.</span>
               </div>
             </div>
@@ -130,7 +131,7 @@ export const GuidedPathway: React.FC<GuidedPathwayProps> = ({ onNavigate }) => {
       explanation: (
         <div className="space-y-4 text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
           <p>
-            Vous ne pouvez pas acheter directement une action sur le marché sans intermédiaire. Vous devez ouvrir un <strong>compte-titres</strong> auprès d'une SGI (comme BOA Capital Securities, CGF Bourse, NSIA Finance, Coris Bourse, Africabourse, etc.).
+            Vous ne pouvez pas acheter directement une action sur le marché sans intermédiaire. Vous devez ouvrir un <GlossaryTerm termId="compte-titres">compte-titres</GlossaryTerm> auprès d'une <GlossaryTerm termId="sgi">SGI (Société de Gestion et d'Intermédiation)</GlossaryTerm> (comme BOA Capital Securities, CGF Bourse, NSIA Finance, Coris Bourse, Africabourse, etc.) agréée par l'<GlossaryTerm termId="amf-umoa">AMF-UMOA</GlossaryTerm>.
           </p>
           <div className="p-4 rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 space-y-2">
             <h4 className="font-extrabold text-emerald-900 dark:text-emerald-200 text-xs uppercase tracking-wider">Critères de choix d'une SGI :</h4>
@@ -179,7 +180,7 @@ export const GuidedPathway: React.FC<GuidedPathwayProps> = ({ onNavigate }) => {
       explanation: (
         <div className="space-y-4 text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
           <p>
-            Pour passer un ordre, vous vous connectez sur l'application de votre SGI (ou transmettez une fiche d'ordre). Vous indiquez :
+            Pour passer un <GlossaryTerm termId="ordre-de-bourse">ordre de bourse</GlossaryTerm>, vous vous connectez sur l'application de votre SGI (ou transmettez une fiche d'ordre). Vous indiquez :
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             <div className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-center">
@@ -196,7 +197,7 @@ export const GuidedPathway: React.FC<GuidedPathwayProps> = ({ onNavigate }) => {
             </div>
           </div>
           <p>
-            Dès qu'un vendeur accepte votre prix dans le <strong>carnet d'ordres</strong>, la transaction est exécutée instantanément.
+            Dès qu'un vendeur accepte votre prix dans le <GlossaryTerm termId="carnet-ordres">carnet d'ordres</GlossaryTerm>, la transaction est exécutée instantanément par le <GlossaryTerm termId="dcbr">DC/BR</GlossaryTerm>.
           </p>
         </div>
       ),
@@ -231,7 +232,7 @@ export const GuidedPathway: React.FC<GuidedPathwayProps> = ({ onNavigate }) => {
       keyPoints: [
         'Plus-value : Différence positive entre le prix de revente et le prix d\'achat d\'une action',
         'Dividende : Part du bénéfice net redistribuée annuellement aux actionnaires en cash',
-        'Avantage fiscal UEMOA : L\'IRVM sur les dividendes d\'actions cotées à la BRVM est retenu à la source (10%), vous ne payez aucun impôt supplémentaire'
+        'Avantage fiscal UEMOA : L\'IRVM sur les dividendes d\'actions cotées à la BRVM est retenu à la source (taux préférentiel), vous ne payez aucun impôt supplémentaire'
       ],
       explanation: (
         <div className="space-y-4 text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
@@ -241,15 +242,15 @@ export const GuidedPathway: React.FC<GuidedPathwayProps> = ({ onNavigate }) => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 space-y-1">
               <div className="flex items-center gap-1.5 font-black text-amber-900 dark:text-amber-300 text-xs">
-                <Coins className="w-4 h-4 text-amber-500" /> Le Dividende (Revenu Passif)
+                <Coins className="w-4 h-4 text-amber-500" /> Le <GlossaryTerm termId="dividende">Dividende</GlossaryTerm> (Revenu Passif)
               </div>
               <p className="text-[11px] text-slate-600 dark:text-slate-300">
-                Chaque année (souvent entre mai et août), les entreprises rentables versent des dividendes directement sur votre compte SGI.
+                Chaque année (souvent entre mai et août), les entreprises rentables versent des dividendes directement sur votre compte SGI, soumis à un taux réduit d'<GlossaryTerm termId="irvm">IRVM</GlossaryTerm> (7%).
               </p>
             </div>
             <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 space-y-1">
               <div className="flex items-center gap-1.5 font-black text-emerald-900 dark:text-emerald-300 text-xs">
-                <TrendingUp className="w-4 h-4 text-emerald-500" /> La Plus-Value (Croissance)
+                <TrendingUp className="w-4 h-4 text-emerald-500" /> La <GlossaryTerm termId="plus-value">Plus-Value</GlossaryTerm> (Croissance)
               </div>
               <p className="text-[11px] text-slate-600 dark:text-slate-300">
                 Si vous achetez une action à 10 000 FCFA et que sa valeur monte à 15 000 FCFA grâce aux bons résultats de la société, vous gagnez 5 000 FCFA de plus-value par action.
@@ -283,13 +284,13 @@ export const GuidedPathway: React.FC<GuidedPathwayProps> = ({ onNavigate }) => {
       icon: Calculator,
       keyPoints: [
         'La régularité bat le timing : Investir un montant fixe chaque mois (DCA - Dollar Cost Averaging) lisse les variations du marché',
-        'Réinvestissement des dividendes : Réinjecter vos dividendes accélère la croissance exponentielle de votre portefeuille',
+        'Réinvestissement des dividendes : Réinjecter vos dividendes accélère la croissance exponentielle de votre portefeuille grâce aux intérêts composés',
         'Horizon long terme : La bourse récompense la patience et la rigueur d\'investissement'
       ],
       explanation: (
         <div className="space-y-4 text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
           <p>
-            Testez directement le pouvoir d'un investissement mensuel régulier sur la BRVM avec notre calculateur express :
+            En combinant la méthode du <GlossaryTerm termId="dca">DCA (investissement programmé)</GlossaryTerm> et la puissance des <GlossaryTerm termId="interets-composes">intérêts composés</GlossaryTerm>, vous bâtissez un patrimoine solide en FCFA. Testez directement avec notre calculateur express :
           </p>
 
           {/* Interactive Mini Express Calculator */}
@@ -573,9 +574,9 @@ export const GuidedPathway: React.FC<GuidedPathwayProps> = ({ onNavigate }) => {
           {currentStep.cta && (
             <button
               onClick={() => onNavigate(currentStep.cta!.path)}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-slate-200 dark:border-slate-700 hover:border-emerald-300 text-xs font-bold transition-all cursor-pointer shadow-2xs"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-indigo-600 hover:bg-emerald-600 text-white font-bold text-xs transition-all cursor-pointer shadow-xs active:scale-[0.98]"
             >
-              <currentStep.cta.icon className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <currentStep.cta.icon className="w-3.5 h-3.5" />
               <span>{currentStep.cta.label}</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>

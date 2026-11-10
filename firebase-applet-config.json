@@ -1,12 +1,12 @@
 {
-  "projectId": "bourse-facile",
-  "appId": "1:91754659492:web:110ec2a5dc3f9e96cb3031",
-  "apiKey": "AIzaSyBrjRuJgJqoYMdeVu9ZDPVdiHozXFB0dpU",
-  "authDomain": "bourse-facile.firebaseapp.com",
+  "projectId": "third-storm-9w532",
+  "appId": "1:633926810372:web:c2720e7ad306117d58ee51",
+  "apiKey": "AIzaSyDPfpwxyJNsDLOH69jlOq6PLbjJN1yemkE",
+  "authDomain": "third-storm-9w532.firebaseapp.com",
   "firestoreDatabaseId": "ai-studio-bourseclair-8beb427d-785b-41cf-b1ba-358589ed533a",
-  "storageBucket": "bourse-facile.firebasestorage.app",
-  "messagingSenderId": "91754659492",
+  "storageBucket": "third-storm-9w532.firebasestorage.app",
+  "messagingSenderId": "633926810372",
   "measurementId": "",
-  "oAuthClientId": "91754659492-mbf3vu10ik7v5l1smbb720vac3oq33an.apps.googleusercontent.com",
+  "oAuthClientId": "633926810372-llrqiu8i3jsk22v0mvm6vjf98lbeomts.apps.googleusercontent.com",
   "recaptchaSiteKey": ""
 }

@@ -2,7 +2,7 @@
   "entities": {
     "users": {
       "title": "User Profiles",
-      "description": "User account information and roles",
+      "description": "User account information, credentials metadata, and roles",
       "type": "object",
       "properties": {
         "uid": { "type": "string" },
@@ -10,9 +10,43 @@
         "displayName": { "type": "string" },
         "phone": { "type": "string" },
         "role": { "type": "string", "enum": ["USER", "ADMIN"] },
-        "createdAt": { "type": "string" }
+        "authProvider": { "type": "string", "enum": ["EMAIL", "GOOGLE", "PHONE"] },
+        "lastLoginAt": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "investorProfile": { "type": "object" }
       },
       "required": ["uid", "email"]
+    },
+    "user_analytics": {
+      "title": "User Navigation & Analytics Events",
+      "description": "Telemetry logs tracking pages visited, searches, and feature interactions",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "path": { "type": "string" },
+        "pageTitle": { "type": "string" },
+        "eventType": { "type": "string", "enum": ["PAGE_VIEW", "SIGN_UP", "LOGIN", "SIMULATION_CREATED", "ALERT_SET", "SGI_CLICKED", "SEARCH", "EXPORT_REPORT"] },
+        "eventDetails": { "type": "string" },
+        "deviceType": { "type": "string" },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["path", "eventType", "timestamp"]
+    },
+    "user_sessions": {
+      "title": "User Sessions",
+      "description": "User session tracking for navigation duration and activity",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "sessionStart": { "type": "string" },
+        "lastActiveAt": { "type": "string" },
+        "pagesVisitedCount": { "type": "number" }
+      },
+      "required": ["sessionStart", "lastActiveAt"]
     },
     "simulations": {
       "title": "Saved Simulations",
@@ -44,11 +78,53 @@
         "targetPrice": { "type": "number" },
         "condition": { "type": "string", "enum": ["ABOVE", "BELOW"] },
         "notificationType": { "type": "string", "enum": ["EMAIL", "PUSH", "BOTH"] },
-        "active": { "type": "boolean" },
-        "triggered": { "type": "boolean" },
+        "active": { "boolean": true },
+        "triggered": { "boolean": true },
         "createdAt": { "type": "string" }
       },
       "required": ["userId", "companySymbol", "targetPrice"]
+    },
+    "virtual_portfolios": {
+      "title": "Virtual Portfolios",
+      "description": "Simulated member investment portfolios with mock balances and positions",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "initialCash": { "type": "number" },
+        "currentCash": { "type": "number" },
+        "positions": { "type": "array" },
+        "transactions": { "type": "array" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["userId", "initialCash", "currentCash"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/users" },
+      "description": "User profile collection"
+    },
+    "/user_analytics/{eventId}": {
+      "schema": { "$ref": "#/entities/user_analytics" },
+      "description": "User navigation and activity logs"
+    },
+    "/user_sessions/{sessionId}": {
+      "schema": { "$ref": "#/entities/user_sessions" },
+      "description": "User active sessions"
+    },
+    "/simulations/{simulationId}": {
+      "schema": { "$ref": "#/entities/simulations" },
+      "description": "Saved portfolio simulations"
+    },
+    "/alerts/{alertId}": {
+      "schema": { "$ref": "#/entities/alerts" },
+      "description": "Configured price threshold alerts"
+    },
+    "/virtual_portfolios/{portfolioId}": {
+      "schema": { "$ref": "#/entities/virtual_portfolios" },
+      "description": "Virtual investment paper portfolios for members"
     }
   }
 }

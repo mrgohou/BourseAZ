@@ -30,6 +30,9 @@ export interface AuditRecord {
 }
 
 export class MarketDataPublisher {
+  private static readonly MAX_REVIEW_QUEUE_SIZE = 150;
+  private static readonly MAX_AUDIT_LOGS_SIZE = 150;
+
   private static reviewQueue: DataReviewItem[] = [];
   private static auditLogs: AuditRecord[] = [];
 
@@ -101,7 +104,10 @@ export class MarketDataPublisher {
       source: sourceName,
     };
 
-    this.reviewQueue.push(reviewItem);
+    this.reviewQueue.unshift(reviewItem);
+    if (this.reviewQueue.length > this.MAX_REVIEW_QUEUE_SIZE) {
+      this.reviewQueue.pop();
+    }
 
     this.addAuditLog(reviewId, 'CREATED', 'system', `Enregistrement reçu depuis ${sourceName}. Statut: ${initialStatus}`);
 
@@ -185,20 +191,20 @@ export class MarketDataPublisher {
     return true;
   }
 
-  public static getPendingReviews(): DataReviewItem[] {
-    return this.reviewQueue.filter(r => r.status === 'PENDING_REVIEW');
+  public static getPendingReviews(limit = 100): DataReviewItem[] {
+    return this.reviewQueue.filter(r => r.status === 'PENDING_REVIEW').slice(0, limit);
   }
 
-  public static getAllReviews(): DataReviewItem[] {
-    return [...this.reviewQueue];
+  public static getAllReviews(limit = 100): DataReviewItem[] {
+    return this.reviewQueue.slice(0, limit);
   }
 
-  public static getAuditLogs(): AuditRecord[] {
-    return [...this.auditLogs];
+  public static getAuditLogs(limit = 100): AuditRecord[] {
+    return this.auditLogs.slice(0, limit);
   }
 
   private static addAuditLog(reviewItemId: string, action: AuditRecord['action'], actor: string, details: string) {
-    this.auditLogs.push({
+    this.auditLogs.unshift({
       id: `aud-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
       reviewItemId,
       action,
@@ -206,6 +212,9 @@ export class MarketDataPublisher {
       actor,
       details,
     });
+    if (this.auditLogs.length > this.MAX_AUDIT_LOGS_SIZE) {
+      this.auditLogs.pop();
+    }
   }
 
   // Published Getters

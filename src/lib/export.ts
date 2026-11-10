@@ -188,3 +188,208 @@ export function exportSimulationToPDF(simulation: SimulationResult): void {
 
   doc.save(`Bourse_Facile_Simulation_${simulation.companySymbol}.pdf`);
 }
+
+/**
+ * Generate CSV file for Virtual Portfolio positions and summary
+ */
+export function exportVirtualPortfolioToCSV(
+  portfolio: { name: string; initialCash: number; currentCash: number },
+  positions: Array<{
+    symbol: string;
+    companyName: string;
+    sector: string;
+    shares: number;
+    averageBuyPrice: number;
+    currentPrice: number;
+    currentValue: number;
+    unrealizedGainLoss: number;
+    unrealizedGainLossPercent: number;
+    weightPercent: number;
+  }>,
+  kpis: {
+    totalValue: number;
+    totalInvested: number;
+    totalGainLoss: number;
+    totalGainLossPercent: number;
+  }
+): void {
+  const headers = [
+    'Symbole',
+    'Entreprise',
+    'Secteur',
+    'Nombre de Titres',
+    'PRU (FCFA)',
+    'Cours Actuel (FCFA)',
+    'Valeur Totale (FCFA)',
+    'Plus/Moins-Value (FCFA)',
+    'Performance (%)',
+    'Poids Portefeuille (%)',
+  ];
+
+  let csvContent = 'data:text/csv;charset=utf-8,\uFEFF';
+  csvContent += `Nom du Portefeuille;${portfolio.name}\n`;
+  csvContent += `Capital Initial;${portfolio.initialCash} FCFA\n`;
+  csvContent += `Liquidités Disponibles;${portfolio.currentCash} FCFA\n`;
+  csvContent += `Valeur Totale du Portefeuille;${kpis.totalValue} FCFA\n`;
+  csvContent += `Performance Globale;${kpis.totalGainLossPercent} %\n`;
+  csvContent += `Date d'Export;${new Date().toLocaleString('fr-FR')}\n\n`;
+
+  csvContent += headers.join(';') + '\n';
+
+  positions.forEach(p => {
+    const row = [
+      p.symbol,
+      p.companyName,
+      p.sector,
+      p.shares.toString(),
+      p.averageBuyPrice.toString(),
+      p.currentPrice.toString(),
+      p.currentValue.toString(),
+      p.unrealizedGainLoss.toString(),
+      `${p.unrealizedGainLossPercent} %`,
+      `${p.weightPercent} %`,
+    ];
+    const escapedRow = row.map(val => `"${val.replace(/"/g, '""')}"`);
+    csvContent += escapedRow.join(';') + '\n';
+  });
+
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement('a');
+  link.setAttribute('href', encodedUri);
+  link.setAttribute('download', `Bourse_Facile_Portfolio_Virtuel_${Date.now()}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+/**
+ * Generate PDF Report for Virtual Portfolio
+ */
+export function exportVirtualPortfolioToPDF(
+  portfolio: { name: string; initialCash: number; currentCash: number },
+  positions: Array<{
+    symbol: string;
+    companyName: string;
+    shares: number;
+    averageBuyPrice: number;
+    currentPrice: number;
+    currentValue: number;
+    unrealizedGainLoss: number;
+    unrealizedGainLossPercent: number;
+    weightPercent: number;
+  }>,
+  kpis: {
+    totalValue: number;
+    totalInvested: number;
+    totalGainLoss: number;
+    totalGainLossPercent: number;
+  }
+): void {
+  const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.getWidth();
+
+  // Header Banner
+  doc.setFillColor(6, 78, 59); // Emerald 900
+  doc.rect(0, 0, pageWidth, 40, 'F');
+
+  doc.setFontSize(18);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(255, 255, 255);
+  doc.text('Bourse Facile - Rapport Portfolio Virtuel', 15, 20);
+
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(167, 243, 208); // Emerald 200
+  doc.text(`Simulation de positions fictives BRVM • Date: ${new Date().toLocaleDateString('fr-FR')}`, 15, 28);
+
+  // Summary Metrics Box
+  let y = 50;
+  doc.setFillColor(248, 250, 252);
+  doc.roundedRect(15, y, pageWidth - 30, 32, 3, 3, 'F');
+  doc.setDrawColor(226, 232, 240);
+  doc.roundedRect(15, y, pageWidth - 30, 32, 3, 3, 'S');
+
+  doc.setFontSize(10);
+  doc.setTextColor(100, 116, 139);
+  doc.text('Capital Initial', 20, y + 10);
+  doc.text('Valeur Totale', 70, y + 10);
+  doc.text('Liquidités', 120, y + 10);
+  doc.text('Performance Globale', 165, y + 10);
+
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(15, 23, 42);
+  doc.text(formatFCFA(portfolio.initialCash), 20, y + 22);
+  doc.text(formatFCFA(kpis.totalValue), 70, y + 22);
+  doc.text(formatFCFA(portfolio.currentCash), 120, y + 22);
+
+  if (kpis.totalGainLoss >= 0) {
+    doc.setTextColor(16, 185, 129); // Green
+  } else {
+    doc.setTextColor(239, 68, 68); // Red
+  }
+  doc.text(`${kpis.totalGainLoss >= 0 ? '+' : ''}${kpis.totalGainLossPercent}%`, 165, y + 22);
+
+  // Positions Table
+  y += 42;
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(15, 23, 42);
+  doc.text(`Positions Détenues en Portefeuille (${positions.length})`, 15, y);
+
+  y += 8;
+  doc.setFillColor(241, 245, 249);
+  doc.rect(15, y, pageWidth - 30, 8, 'F');
+  doc.setFontSize(8);
+  doc.setTextColor(71, 85, 105);
+  doc.text('Action', 18, y + 5.5);
+  doc.text('Titres', 60, y + 5.5);
+  doc.text('PRU', 85, y + 5.5);
+  doc.text('Cours', 115, y + 5.5);
+  doc.text('Valeur', 145, y + 5.5);
+  doc.text('Plus/Moins-Value', 175, y + 5.5);
+
+  y += 10;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+
+  positions.forEach((pos, idx) => {
+    if (y > 260) {
+      doc.addPage();
+      y = 20;
+    }
+    if (idx % 2 === 1) {
+      doc.setFillColor(248, 250, 252);
+      doc.rect(15, y - 4, pageWidth - 30, 7, 'F');
+    }
+    doc.setTextColor(15, 23, 42);
+    doc.text(`${pos.symbol} - ${pos.companyName.slice(0, 18)}`, 18, y);
+    doc.text(`${pos.shares}`, 60, y);
+    doc.text(formatFCFA(pos.averageBuyPrice), 85, y);
+    doc.text(formatFCFA(pos.currentPrice), 115, y);
+    doc.text(formatFCFA(pos.currentValue), 145, y);
+
+    if (pos.unrealizedGainLoss >= 0) {
+      doc.setTextColor(16, 185, 129);
+    } else {
+      doc.setTextColor(239, 68, 68);
+    }
+    doc.text(`${pos.unrealizedGainLoss >= 0 ? '+' : ''}${pos.unrealizedGainLossPercent}%`, 175, y);
+
+    y += 7;
+  });
+
+  // Footer Disclaimer
+  const footY = doc.internal.pageSize.getHeight() - 15;
+  doc.setFontSize(7.5);
+  doc.setTextColor(148, 163, 184);
+  doc.text(
+    'Rapport de simulation virtuelle Bourse Facile. Destiné à l\'entraînement pédagogique sur le marché boursier BRVM.',
+    pageWidth / 2,
+    footY,
+    { align: 'center' }
+  );
+
+  doc.save(`Bourse_Facile_Portfolio_Virtuel_${Date.now()}.pdf`);
+}
+

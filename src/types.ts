@@ -11,6 +11,9 @@ export interface Quote {
   low: number;
   open: number;
   volume: number;
+  valueTradedFcfa?: number;
+  valuePercent?: number;
+  marketCap?: number;
   timestamp: string;
   source: string;
   freshness: DataFreshness;
@@ -42,6 +45,10 @@ export interface Company {
   lastUpdated: string;
   source: string;
   isDemo: boolean;
+  volume?: number; // Volume de titres de la séance (source RichBourse)
+  valueTradedFcfa?: number; // Valeur totale échangée en FCFA (source RichBourse)
+  valuePercent?: number; // Part de la valeur dans la séance (%)
+  marketCap?: number; // Capitalisation boursière totale en FCFA
   eps?: number; // BPA (Bénéfice Par Action) in FCFA
   per?: number; // Price Earning Ratio
   roe?: number; // Return on Equity (% - Rentabilité des capitaux propres)
@@ -171,14 +178,30 @@ export interface LearningModule {
   };
 }
 
+export type InvestorProfileType = 'prudent' | 'equilibre' | 'dynamique';
+
+export interface InvestorProfileData {
+  profileType: InvestorProfileType;
+  score: number; // calculated average score (1-3)
+  horizon?: 'court_terme' | 'moyen_terme' | 'long_terme';
+  monthlyBudget?: number; // in FCFA
+  riskTolerance?: 'faible' | 'moderee' | 'elevee';
+  objective?: 'capital_preservation' | 'dividends' | 'growth';
+  answers?: number[];
+  updatedAt: string;
+}
+
 export interface UserProfile {
   id: string;
   email: string;
   name: string;
+  photoUrl?: string;
   phone?: string;
   role: 'USER' | 'ADMIN';
   authProvider: 'EMAIL' | 'GOOGLE' | 'PHONE' | 'RICHBOURSE';
   createdAt: string;
+  investorProfile?: InvestorProfileData;
+  favoriteSgis?: string[];
 }
 
 export interface AuditLog {
@@ -210,4 +233,58 @@ export interface ImportJob {
   status: 'PENDING' | 'RUNNING' | 'COMPLETED' | 'FAILED';
   recordsProcessed: number;
   errorMessage?: string;
+}
+
+export type VirtualOrderType = 'BUY' | 'SELL';
+
+export interface VirtualPosition {
+  id: string;
+  symbol: string;
+  companyName: string;
+  sector: string;
+  shares: number;
+  averageBuyPrice: number; // PRU in FCFA
+  totalInvested: number; // in FCFA
+  totalFeesPaid: number; // in FCFA
+  firstBuyDate: string;
+  lastBuyDate: string;
+}
+
+export interface VirtualTransaction {
+  id: string;
+  type: VirtualOrderType;
+  symbol: string;
+  companyName: string;
+  shares: number;
+  pricePerShare: number;
+  grossAmount: number;
+  fee: number;
+  netAmount: number;
+  realizedGainLoss?: number;
+  realizedGainLossPercent?: number;
+  timestamp: string;
+  notes?: string;
+}
+
+export interface VirtualPortfolio {
+  id: string;
+  userId: string;
+  name: string;
+  initialCash: number;
+  currentCash: number;
+  positions: VirtualPosition[];
+  transactions: VirtualTransaction[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface VirtualPositionCalculated extends VirtualPosition {
+  currentPrice: number;
+  previousClose: number;
+  dayChangePercent: number;
+  currentValue: number;
+  unrealizedGainLoss: number;
+  unrealizedGainLossPercent: number;
+  dailyGainLoss: number;
+  weightPercent: number;
 }

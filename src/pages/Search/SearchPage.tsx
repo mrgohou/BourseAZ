@@ -1,11 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { DEMO_COMPANIES } from '../../data/demo-data';
 import { Company } from '../../types';
 import { CompanyCard } from '../../components/finance/CompanyCard';
 import { Button } from '../../components/ui/Button';
 import { SkeletonCard } from '../../components/ui/Skeleton';
-import { fetchPublicCompanies } from '../../lib/api';
-import { Search, Filter, RefreshCw, AlertCircle, Database, Sparkles } from 'lucide-react';
+import { MarketSyncStatusBar } from '../../components/finance/MarketSyncStatusBar';
+import { MarketScannerModal } from '../../components/finance/MarketScannerModal';
+import { CompanyReportsModal } from '../../components/finance/CompanyReportsModal';
+import { DailyMarketSessionBadge } from '../../components/finance/DailyMarketSessionBadge';
+import { useMarketData } from '../../features/market/MarketContext';
+import { Search, Filter, RefreshCw, AlertCircle, Database, Sparkles, Activity, FileText, ExternalLink } from 'lucide-react';
 
 interface SearchPageProps {
   initialQuery?: string;
@@ -15,40 +18,14 @@ interface SearchPageProps {
 export const SearchPage: React.FC<SearchPageProps> = ({ initialQuery = '', onNavigate }) => {
   const [query, setQuery] = useState(initialQuery);
   const [selectedSector, setSelectedSector] = useState<string>('ALL');
-  const [companies, setCompanies] = useState<Company[]>(DEMO_COMPANIES);
-  const [provider, setProvider] = useState<string>('demo');
-  const [configError, setConfigError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const { companies, marketSession, isRefreshing, refreshMarketData } = useMarketData();
+  const [configError] = useState<string | null>(null);
+  const [isScannerModalOpen, setIsScannerModalOpen] = useState(false);
+  const [selectedCompanyForReports, setSelectedCompanyForReports] = useState<Company | null>(null);
 
-  const loadCompanies = async (isManual = false) => {
-    if (isManual) {
-      setIsRefreshing(true);
-    } else {
-      setLoading(true);
-    }
-
-    try {
-      const res = await fetchPublicCompanies();
-      if (res.configError) {
-        setConfigError(res.configError);
-      } else if (res.companies && res.companies.length > 0) {
-        setCompanies(res.companies);
-      }
-      if (res.provider) setProvider(res.provider);
-    } catch {
-      // ignore
-    } finally {
-      setLoading(false);
-      setIsRefreshing(false);
-    }
+  const loadCompanies = (isManual = false) => {
+    refreshMarketData(isManual);
   };
-
-  useEffect(() => {
-    let mounted = true;
-    loadCompanies();
-    return () => { mounted = false; };
-  }, []);
 
   // Extract all unique sectors
   const sectors = useMemo(() => {
@@ -76,13 +53,65 @@ export const SearchPage: React.FC<SearchPageProps> = ({ initialQuery = '', onNav
 
   return (
     <div className="space-y-8 pb-12">
-      {/* Title */}
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">Rechercher une action BRVM</h1>
-        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-          Explorez le marché des entreprises cotées, consultez les prix et filtrez par secteur d’activité.
-        </p>
-      </div>
+      {/* Live Market Sync Bar */}
+      <MarketSyncStatusBar onOpenAuditModal={() => setIsScannerModalOpen(true)} />
+
+      {/* Daily Market Session Badge */}
+      <DailyMarketSessionBadge />
+
+      {/* Section 1: Hero Banner (Vert Foncé) */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-emerald-950 via-teal-950 to-emerald-900 text-white rounded-3xl p-6 sm:p-10 shadow-2xl border-2 border-emerald-800">
+        <div className="absolute -right-20 -top-20 w-80 h-80 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -left-20 -bottom-20 w-80 h-80 bg-teal-500/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.12),transparent_50%)] pointer-events-none" />
+
+        <div className="relative z-10 max-w-4xl space-y-4">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-900/90 border border-emerald-500/50 text-emerald-300 text-xs font-black uppercase tracking-wider shadow-sm">
+            <Search className="w-3.5 h-3.5 text-emerald-400" />
+            COTE OFFICIELLE & ACTIONS COTÉES BRVM
+          </div>
+
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight text-white font-['Outfit']">
+            Cote Officielle & Actions BRVM
+          </h1>
+
+          <p className="text-sm sm:text-base text-emerald-100/90 font-normal leading-relaxed">
+            Explorez l'ensemble des 46 valeurs cotées de la zone UEMOA, filtrez par secteur d'activité, analysez les PER et consultez les rapports financiers annuels officiels.
+          </p>
+
+          <div className="p-3 sm:p-3.5 rounded-2xl bg-emerald-900/60 border border-emerald-700/60 flex flex-wrap items-center justify-between gap-3 text-xs shadow-inner">
+            <div className="flex items-center gap-2">
+              <span className="flex h-2.5 w-2.5 relative">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400" />
+              </span>
+              <span className="text-emerald-200 font-bold">Séance en continu :</span>
+              <span className="font-black text-white">{companies.length} titres sous surveillance</span>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={() => setIsScannerModalOpen(true)}
+                className="px-4 py-2 rounded-full bg-amber-400 hover:bg-amber-300 text-emerald-950 font-black text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-md hover:scale-105 active:scale-95"
+              >
+                <Activity className="w-4 h-4 text-emerald-950" />
+                <span>Palmarès & Audit BRVM</span>
+              </button>
+
+              <a
+                href="https://www.brvm.org/fr/rapports-societes-cotees"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-2 rounded-full bg-emerald-900/80 hover:bg-emerald-800/90 text-emerald-200 border border-emerald-600/50 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm hover:scale-105 active:scale-95"
+              >
+                <FileText className="w-4 h-4 text-emerald-400" />
+                <span>Rapports BRVM</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Configuration Error Banner if Provider Not Properly Configured */}
       {configError && (
@@ -99,57 +128,54 @@ export const SearchPage: React.FC<SearchPageProps> = ({ initialQuery = '', onNav
       )}
 
       {/* Filter Controls */}
-      <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
-        <div className="flex flex-col sm:flex-row gap-3">
+      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-emerald-100/80 dark:border-slate-800 p-5 sm:p-6 shadow-xs space-y-4">
+        <div className="flex flex-col md:flex-row gap-4">
+          {/* Search Box - M3 Pill Shape */}
           <div className="relative flex-1">
-            <Search className="w-5 h-5 absolute left-3.5 top-3 text-slate-400" />
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
-              placeholder="Rechercher par nom ou symbole (ex: Sonatel, SNTS, Banque)..."
+              placeholder="Rechercher par symbole, nom (ex: SNTS, Solibra, Palmci)..."
               value={query}
               onChange={e => setQuery(e.target.value)}
-              className="w-full pl-11 pr-4 py-2.5 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl outline-none focus:border-emerald-500 focus:bg-white dark:focus:bg-slate-800 transition-all font-medium"
+              className="w-full pl-10 pr-4 py-2.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
             />
           </div>
 
-          <div className="flex items-center gap-2">
-            <div className="relative flex-1 sm:w-64">
-              <Filter className="w-4 h-4 absolute left-3 top-3 text-slate-400 pointer-events-none" />
-              <select
-                value={selectedSector}
-                onChange={e => setSelectedSector(e.target.value)}
-                className="w-full pl-9 pr-8 py-2.5 text-xs font-semibold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl outline-none focus:border-emerald-500 appearance-none cursor-pointer"
-              >
-                <option value="ALL">Tous les secteurs ({companies.length})</option>
-                {sectors.map(sec => (
-                  <option key={sec} value={sec}>
-                    {sec}
-                  </option>
-                ))}
-              </select>
-            </div>
+          {/* Sector Select - M3 Pill Shape */}
+          <div className="flex items-center gap-2 min-w-[240px]">
+            <Filter className="w-4 h-4 text-slate-400 shrink-0" />
+            <select
+              value={selectedSector}
+              onChange={e => setSelectedSector(e.target.value)}
+              className="w-full px-4 py-2.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all cursor-pointer"
+            >
+              <option value="ALL">Tous les secteurs ({companies.length})</option>
+              {sectors.map(sec => (
+                <option key={sec} value={sec}>
+                  {sec}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
 
+        {/* Status bar */}
+        <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex items-center gap-2">
+            <span>
+              <strong>{filteredCompanies.length}</strong> entreprise{filteredCompanies.length > 1 ? 's' : ''} trouvée{filteredCompanies.length > 1 ? 's' : ''}
+            </span>
             {(query || selectedSector !== 'ALL') && (
               <button
                 onClick={handleReset}
-                className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
-                title="Réinitialiser la recherche"
+                className="text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer font-bold ml-2"
               >
-                <RefreshCw className="w-4 h-4" />
+                Réinitialiser les filtres
               </button>
             )}
           </div>
-        </div>
-      </div>
 
-      {/* Results Header */}
-      <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-semibold">
-        <span>{filteredCompanies.length} entreprise(s) trouvée(s)</span>
-        <div className="flex items-center gap-3">
-          <span className="flex items-center gap-1">
-            <Database className="w-3.5 h-3.5 text-emerald-500" />
-            Source: <strong className="uppercase text-slate-700 dark:text-slate-300">{provider}</strong>
-          </span>
           <button
             onClick={() => loadCompanies(true)}
             disabled={isRefreshing}
@@ -162,7 +188,7 @@ export const SearchPage: React.FC<SearchPageProps> = ({ initialQuery = '', onNav
       </div>
 
       {/* Skeleton Loading State */}
-      {loading ? (
+      {(isRefreshing && companies.length === 0) ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           <SkeletonCard />
           <SkeletonCard />
@@ -201,10 +227,25 @@ export const SearchPage: React.FC<SearchPageProps> = ({ initialQuery = '', onNav
               onSelect={sym => onNavigate(`/company/${sym}`)}
               onSimulate={sym => onNavigate(`/simulation?symbol=${sym}`)}
               onCompare={sym => onNavigate(`/comparison?symbol=${sym}`)}
+              onViewReports={comp => setSelectedCompanyForReports(comp)}
             />
           ))}
         </div>
       )}
+
+      {/* Company Official Reports Modal */}
+      <CompanyReportsModal
+        isOpen={!!selectedCompanyForReports}
+        onClose={() => setSelectedCompanyForReports(null)}
+        company={selectedCompanyForReports}
+      />
+
+      {/* Market Scanner Modal */}
+      <MarketScannerModal
+        isOpen={isScannerModalOpen}
+        onClose={() => setIsScannerModalOpen(false)}
+        onNavigate={onNavigate}
+      />
     </div>
   );
 };

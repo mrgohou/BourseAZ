@@ -1,5 +1,6 @@
 import React from 'react';
-import { AlertCircle, ShieldCheck } from 'lucide-react';
+import { AlertCircle, ShieldCheck, Sparkles } from 'lucide-react';
+import { startOnboardingTour } from '../common/OnboardingTour';
 
 interface FooterProps {
   onNavigate: (path: string) => void;
@@ -29,6 +30,15 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           <div>
             <h5 className="text-white font-bold mb-3 text-xs uppercase tracking-wider">Fonctionnalités</h5>
             <ul className="space-y-2 text-xs">
+              <li>
+                <button
+                  onClick={startOnboardingTour}
+                  className="text-amber-400 hover:text-amber-300 font-bold transition-colors cursor-pointer flex items-center gap-1.5"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  Paco Conseiller Bourse (Chatbot & Guide)
+                </button>
+              </li>
               <li><button onClick={() => onNavigate('/search')} className="hover:text-white transition-colors cursor-pointer">Rechercher une action</button></li>
               <li><button onClick={() => onNavigate('/simulation')} className="hover:text-white transition-colors cursor-pointer">Simulateur de rendement</button></li>
               <li><button onClick={() => onNavigate('/comparison')} className="hover:text-white transition-colors cursor-pointer">Comparateur d'entreprises</button></li>
