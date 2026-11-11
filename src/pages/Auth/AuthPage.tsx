@@ -7,14 +7,9 @@ import {
   Mail,
   Phone,
   Shield,
-  ArrowRight,
   CheckCircle2,
   Lock,
   User,
-  UserCheck,
-  KeyRound,
-  ChevronRight,
-  Sparkles,
 } from 'lucide-react';
 
 interface AuthPageProps {
@@ -35,11 +30,11 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onNavigate }) => {
   } = useAuth();
 
   const [mode, setMode] = useState<'SELECT' | 'EMAIL_LOGIN' | 'EMAIL_REGISTER' | 'PHONE' | 'OTP'>('SELECT');
-  const [email, setEmail] = useState('investisseur@bourseclair.ci');
-  const [password, setPassword] = useState('Pass1234!');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [name, setName] = useState('');
-  const [phone, setPhone] = useState('+22507000000');
-  const [otp, setOtp] = useState('123456');
+  const [phone, setPhone] = useState('');
+  const [otp, setOtp] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [isGoogleModalOpen, setIsGoogleModalOpen] = useState(false);
@@ -152,8 +147,8 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onNavigate }) => {
     }
   };
 
-  const renderGoogleButton = (label = 'Continuer avec Google', sublabel = 'Connexion instantanée en 1 clic') => (
-    <div className="space-y-3 w-full">
+  const renderGoogleButton = (label = 'Continuer avec Google', sublabel = 'Connexion sécurisée en 1 clic') => (
+    <div className="w-full">
       <button
         type="button"
         onClick={() => handleGoogleLogin()}
@@ -180,74 +175,8 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onNavigate }) => {
         </svg>
         <span>{label}</span>
       </button>
-
-      {/* 1-Click Fast Connect Google Accounts Card */}
-      <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 space-y-2">
-        <div className="flex items-center justify-between">
-          <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-            Comptes Google vérifiés (1 clic) :
-          </span>
-          <button
-            type="button"
-            onClick={() => setIsGoogleModalOpen(true)}
-            className="text-[11px] text-emerald-600 dark:text-emerald-400 hover:underline font-bold cursor-pointer"
-          >
-            Autre compte Google
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          <button
-            type="button"
-            onClick={() => handleGoogleLogin('smileafricawebagency@gmail.com', 'Smile Africa Web Agency')}
-            disabled={loading}
-            className="p-2.5 rounded-xl border border-emerald-500/40 bg-emerald-50/70 dark:bg-emerald-950/40 hover:bg-emerald-100/80 dark:hover:bg-emerald-900/60 text-left flex items-center justify-between group cursor-pointer transition-all shadow-2xs"
-          >
-            <div className="flex items-center gap-2 overflow-hidden">
-              <div className="w-7 h-7 rounded-full bg-emerald-600 text-white font-black text-xs flex items-center justify-center shrink-0">
-                S
-              </div>
-              <div className="truncate">
-                <span className="text-xs font-bold text-slate-900 dark:text-white block truncate">Smile Africa Agency</span>
-                <span className="text-[10px] text-emerald-700 dark:text-emerald-300 font-extrabold uppercase">Admin Google</span>
-              </div>
-            </div>
-            <ArrowRight className="w-3.5 h-3.5 text-emerald-600 group-hover:translate-x-0.5 transition-transform shrink-0" />
-          </button>
-
-          <button
-            type="button"
-            onClick={() => handleGoogleLogin('investisseur.brvm@gmail.com', 'Investisseur BRVM')}
-            disabled={loading}
-            className="p-2.5 rounded-xl border border-blue-500/40 bg-blue-50/70 dark:bg-blue-950/40 hover:bg-blue-100/80 dark:hover:bg-blue-900/60 text-left flex items-center justify-between group cursor-pointer transition-all shadow-2xs"
-          >
-            <div className="flex items-center gap-2 overflow-hidden">
-              <div className="w-7 h-7 rounded-full bg-blue-600 text-white font-black text-xs flex items-center justify-center shrink-0">
-                I
-              </div>
-              <div className="truncate">
-                <span className="text-xs font-bold text-slate-900 dark:text-white block truncate">Investisseur BRVM</span>
-                <span className="text-[10px] text-blue-700 dark:text-blue-300 font-extrabold uppercase">Membre Google</span>
-              </div>
-            </div>
-            <ArrowRight className="w-3.5 h-3.5 text-blue-600 group-hover:translate-x-0.5 transition-transform shrink-0" />
-          </button>
-        </div>
-      </div>
     </div>
   );
-
-  const prefillDemoUser = () => {
-    setEmail('investisseur@bourseclair.ci');
-    setPassword('Pass1234!');
-    setErrorMsg(null);
-  };
-
-  const prefillBourseFacileAdmin = () => {
-    setEmail('boursefacileapp');
-    setPassword('@Gohou131905');
-    setErrorMsg(null);
-  };
 
   return (
     <div className="max-w-lg mx-auto my-8 pb-12 space-y-6">
@@ -383,34 +312,6 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onNavigate }) => {
               />
             </div>
 
-            {mode === 'EMAIL_LOGIN' && (
-              <div className="p-3.5 bg-indigo-50/80 dark:bg-indigo-950/40 rounded-2xl border border-indigo-200/80 dark:border-indigo-800 space-y-2 text-xs">
-                <span className="font-extrabold text-indigo-900 dark:text-indigo-200 flex items-center gap-1.5">
-                  <Shield className="w-4 h-4 text-amber-500" />
-                  Accès Administrateur & Comptes Démo :
-                </span>
-                <div className="flex flex-col gap-1.5">
-                  <button
-                    type="button"
-                    onClick={prefillBourseFacileAdmin}
-                    className="w-full p-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-left flex items-center justify-between transition-colors cursor-pointer text-xs shadow-xs"
-                  >
-                    <span><strong>Admin Principal :</strong> boursefacileapp</span>
-                    <span className="font-mono bg-indigo-800 px-1.5 py-0.5 rounded text-[10px]">@Gohou131905</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={prefillDemoUser}
-                    className="w-full p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 transition-colors cursor-pointer text-xs flex items-center justify-between"
-                  >
-                    <span>Investisseur : investisseur@bourseclair.ci</span>
-                    <span className="font-mono bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded text-[10px]">Pass1234!</span>
-                  </button>
-                </div>
-              </div>
-            )}
-
             <button
               type="submit"
               disabled={loading}
@@ -486,7 +387,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onNavigate }) => {
         {mode === 'OTP' && (
           <form onSubmit={handleVerifyOtp} className="space-y-4">
             <h3 className="font-bold text-slate-900 dark:text-white text-base">Saisir le Code de Validation</h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400">Saisissez le code SMS à 6 chiffres (Exemple de démonstration : <strong>123456</strong>)</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Saisissez le code de validation SMS à 6 chiffres reçu sur votre téléphone.</p>
 
             <div>
               <label className="text-xs font-bold text-slate-600 dark:text-slate-300 block mb-1">Code à 6 chiffres *</label>
@@ -494,6 +395,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onNavigate }) => {
                 type="text"
                 maxLength={6}
                 required
+                placeholder="123456"
                 value={otp}
                 onChange={e => setOtp(e.target.value)}
                 className="w-full p-3 text-center text-xl font-mono font-black bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none tracking-widest focus:border-blue-500 text-slate-900 dark:text-white"
@@ -536,78 +438,12 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onNavigate }) => {
             </div>
             <div className="text-xs">
               <p className="font-bold text-blue-950 dark:text-blue-100">
-                Sélectionnez votre compte Google
+                Connexion avec votre compte Google
               </p>
               <p className="text-blue-700/80 dark:text-blue-300/80 text-[11px]">
-                Connexion directe sécurisée avec synchronisation en temps réel de votre profil d'investisseur.
+                Indiquez votre adresse e-mail Google pour accéder à votre Espace Client et synchroniser vos investissements.
               </p>
             </div>
-          </div>
-
-          <div className="space-y-2">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 block px-1">
-              Comptes Rapides Recommandés :
-            </span>
-
-            {/* Admin account: smileafricawebagency@gmail.com */}
-            <button
-              type="button"
-              onClick={() => handleGoogleLogin('smileafricawebagency@gmail.com', 'Smile Africa Web Agency')}
-              disabled={loading}
-              className="w-full p-3 rounded-2xl border-2 border-emerald-500/40 bg-emerald-50/50 dark:bg-emerald-950/30 hover:bg-emerald-100/70 dark:hover:bg-emerald-900/50 transition-all text-left flex items-center justify-between group cursor-pointer"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-emerald-600 text-white font-black text-sm flex items-center justify-center shadow-xs">
-                  S
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-slate-900 dark:text-white">Smile Africa Web Agency</span>
-                    <span className="px-2 py-0.5 rounded-full bg-emerald-600 text-white text-[10px] font-black uppercase">
-                      Admin
-                    </span>
-                  </div>
-                  <span className="text-[11px] text-slate-600 dark:text-slate-400 font-mono">
-                    smileafricawebagency@gmail.com
-                  </span>
-                </div>
-              </div>
-              <ChevronRight className="w-4 h-4 text-emerald-600 group-hover:translate-x-1 transition-transform" />
-            </button>
-
-            {/* Standard Investor account */}
-            <button
-              type="button"
-              onClick={() => handleGoogleLogin('investisseur.brvm@gmail.com', 'Investisseur BRVM')}
-              disabled={loading}
-              className="w-full p-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 transition-all text-left flex items-center justify-between group cursor-pointer"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-blue-600 text-white font-black text-sm flex items-center justify-center shadow-xs">
-                  I
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-slate-900 dark:text-white">Investisseur BRVM</span>
-                    <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 text-[10px] font-bold">
-                      Investisseur
-                    </span>
-                  </div>
-                  <span className="text-[11px] text-slate-600 dark:text-slate-400 font-mono">
-                    investisseur.brvm@gmail.com
-                  </span>
-                </div>
-              </div>
-              <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 transition-transform" />
-            </button>
-          </div>
-
-          <div className="relative flex py-1 items-center">
-            <div className="flex-grow border-t border-slate-200 dark:border-slate-700"></div>
-            <span className="shrink-0 mx-3 text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-              ou saisir un compte Google
-            </span>
-            <div className="flex-grow border-t border-slate-200 dark:border-slate-700"></div>
           </div>
 
           {/* Custom Google account form */}
@@ -625,7 +461,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onNavigate }) => {
           >
             <div>
               <label className="text-[11px] font-bold text-slate-600 dark:text-slate-300 block mb-1">
-                Adresse Google (@gmail.com ou compte Google Workspace)
+                Adresse Google (@gmail.com ou Google Workspace) *
               </label>
               <input
                 type="email"

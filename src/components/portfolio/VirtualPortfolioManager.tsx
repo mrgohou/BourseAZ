@@ -24,6 +24,9 @@ import {
   FileSpreadsheet,
   FileText,
   Percent,
+  Trash2,
+  Calculator,
+  BookOpen,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -53,6 +56,7 @@ import {
   executeBuyOrder,
   executeSellOrder,
   resetVirtualPortfolio,
+  deletePositionFromPortfolio,
   PortfolioKPIs,
 } from '../../services/virtual-portfolio/virtualPortfolioService';
 import { formatFCFA, formatPercent, formatDateFrench } from '../../lib/formatters';
@@ -81,11 +85,13 @@ export const VirtualPortfolioManager: React.FC<VirtualPortfolioManagerProps> = (
   const [isBuyModalOpen, setIsBuyModalOpen] = useState(false);
   const [isSellModalOpen, setIsSellModalOpen] = useState(false);
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+  const [positionToDelete, setPositionToDelete] = useState<VirtualPositionCalculated | null>(null);
   const [selectedPositionForSell, setSelectedPositionForSell] = useState<VirtualPositionCalculated | null>(null);
 
   // Buy form state
   const [selectedBuySymbol, setSelectedBuySymbol] = useState<string>('SNTS');
   const [buyShares, setBuyShares] = useState<number>(50);
+  const [customBuyPrice, setCustomBuyPrice] = useState<number | null>(null);
   const [buyStockSearch, setBuyStockSearch] = useState<string>('');
   const [buyNotes, setBuyNotes] = useState<string>('');
   const [buyErrorMessage, setBuyErrorMessage] = useState<string | null>(null);
@@ -147,11 +153,19 @@ export const VirtualPortfolioManager: React.FC<VirtualPortfolioManagerProps> = (
     );
   }, [buyStockSearch, companies]);
 
+  // Effective purchase price entered by user or defaulting to current market price
+  const effectiveBuyPrice = useMemo(() => {
+    if (customBuyPrice !== null && customBuyPrice > 0) {
+      return customBuyPrice;
+    }
+    return selectedBuyCompany ? selectedBuyCompany.currentPrice : 0;
+  }, [customBuyPrice, selectedBuyCompany]);
+
   // Calculation for buy modal
-  const buyGross = buyShares * (selectedBuyCompany ? selectedBuyCompany.currentPrice : 0);
+  const buyGross = buyShares * effectiveBuyPrice;
   const buyFee = Math.max(100, Math.round(buyGross * 0.006));
   const buyNet = buyGross + buyFee;
-  const canAffordBuy = buyNet <= portfolio.currentCash && buyShares > 0;
+  const canAffordBuy = buyNet <= portfolio.currentCash && buyShares > 0 && effectiveBuyPrice > 0;
 
   // Calculation for sell modal
   const sellPrice = selectedPositionForSell ? selectedPositionForSell.currentPrice : 0;
@@ -162,6 +176,18 @@ export const VirtualPortfolioManager: React.FC<VirtualPortfolioManagerProps> = (
   const sellRealizedPL = sellNet - sellCostBasis;
   const sellRealizedPLPercent = sellCostBasis > 0 ? (sellRealizedPL / sellCostBasis) * 100 : 0;
 
+  // Open buy modal prefilled with a given stock
+  const openBuyModalWithStock = (symbol?: string) => {
+    const sym = symbol || selectedBuySymbol;
+    setSelectedBuySymbol(sym);
+    const targetComp = companies.find(c => c.symbol.toUpperCase() === sym.toUpperCase());
+    if (targetComp) {
+      setCustomBuyPrice(targetComp.currentPrice);
+    }
+    setBuyErrorMessage(null);
+    setIsBuyModalOpen(true);
+  };
+
   // Handle Buy execution
   const handleExecuteBuy = (e: React.FormEvent) => {
     e.preventDefault();
@@ -170,17 +196,35 @@ export const VirtualPortfolioManager: React.FC<VirtualPortfolioManagerProps> = (
     try {
       if (!selectedBuyCompany) throw new Error('Veuillez sélectionner une action.');
       if (buyShares <= 0) throw new Error('Veuillez indiquer un nombre d\'actions valide.');
+      if (effectiveBuyPrice <= 0) throw new Error('Veuillez indiquer un cours à l\'achat valide.');
 
-      const updated = executeBuyOrder(portfolio, selectedBuyCompany, buyShares, undefined, buyNotes);
+      const updated = executeBuyOrder(portfolio, selectedBuyCompany, buyShares, effectiveBuyPrice, buyNotes);
       updateAndSavePortfolio(updated);
       setIsBuyModalOpen(false);
       setBuyNotes('');
+      setCustomBuyPrice(null);
       showToast(
-        'Ordre d\'achat exécuté !',
-        `Achat de ${buyShares} action(s) ${selectedBuyCompany.symbol} pour un total de ${formatFCFA(buyNet)} (courtage inclus).`
+        'Action ajoutée au portefeuille !',
+        `Ajout de ${buyShares} action(s) ${selectedBuyCompany.symbol} au cours d'achat de ${formatFCFA(effectiveBuyPrice)} (Total net débité : ${formatFCFA(buyNet)} avec courtage).`
       );
     } catch (err: any) {
       setBuyErrorMessage(err.message || 'Erreur lors de l\'exécution de l\'ordre.');
+    }
+  };
+
+  // Handle position deletion
+  const handleConfirmDeletePosition = () => {
+    if (!positionToDelete) return;
+    try {
+      const updated = deletePositionFromPortfolio(portfolio, positionToDelete.symbol);
+      updateAndSavePortfolio(updated);
+      showToast(
+        'Position supprimée du portefeuille',
+        `La ligne ${positionToDelete.symbol} (${positionToDelete.companyName}) a été retirée et le montant investi (${formatFCFA(positionToDelete.totalInvested)}) a été réintégré à vos liquidités.`
+      );
+      setPositionToDelete(null);
+    } catch (err: any) {
+      showToast('Erreur', err.message || 'Impossible de supprimer cette position.', 'error');
     }
   };
 
@@ -279,20 +323,13 @@ export const VirtualPortfolioManager: React.FC<VirtualPortfolioManagerProps> = (
 
       {/* Header Banner - Vert Foncé / Émeraude Premium */}
       <div className="p-6 sm:p-8 bg-gradient-to-br from-emerald-950 via-teal-950 to-slate-950 text-white border-b border-emerald-800/80 relative overflow-hidden">
-        <div className="absolute -right-16 -top-16 w-64 h-64 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute left-1/3 -bottom-16 w-64 h-64 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
-
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-900/90 border border-emerald-500/40 text-emerald-300 text-[11px] font-black uppercase tracking-wider shadow-sm">
-              <Wallet className="w-3.5 h-3.5 text-emerald-400" />
-              PORTFOLIO VIRTUEL • PAPER TRADING BRVM
-            </div>
             <h2 className="text-2xl sm:text-3xl font-black text-white font-['Outfit']">
               {portfolio.name}
             </h2>
             <p className="text-xs sm:text-sm text-emerald-100/80 max-w-xl font-normal leading-relaxed">
-              Investissez avec un capital virtuel en conditions réelles de marché. Testez vos stratégies sans risquer votre argent avant d'ouvrir un compte SGI.
+              Sélectionnez des titres et actions de la BRVM à ajouter dans votre portefeuille pour suivre leur évolution, leur rentabilité et leur performance en temps réel.
             </p>
           </div>
 
@@ -301,14 +338,11 @@ export const VirtualPortfolioManager: React.FC<VirtualPortfolioManagerProps> = (
             <DailyMarketSessionBadge variant="compact" />
 
             <button
-              onClick={() => {
-                setBuyErrorMessage(null);
-                setIsBuyModalOpen(true);
-              }}
+              onClick={() => openBuyModalWithStock()}
               className="px-5 py-2.5 rounded-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs flex items-center gap-2 shadow-lg transition-all cursor-pointer hover:scale-105 active:scale-95"
             >
               <PlusCircle className="w-4 h-4" />
-              <span>Acheter une action</span>
+              <span>Ajouter des actions</span>
             </button>
 
             <button
@@ -498,9 +532,9 @@ export const VirtualPortfolioManager: React.FC<VirtualPortfolioManagerProps> = (
           )}
         </div>
 
-        {/* TAB 1: POSITIONS TABLE */}
+        {/* TAB 1: POSITIONS TABLE - 3 SECTIONS EDUCATIVES & PEDAGOGIQUES */}
         {activeTab === 'POSITIONS' && (
-          <div className="space-y-6">
+          <div className="space-y-8">
             {/* D3 Portfolio Balance Progression Chart */}
             <div className="space-y-2">
               <div className="flex items-center justify-between px-1">
@@ -527,6 +561,7 @@ export const VirtualPortfolioManager: React.FC<VirtualPortfolioManagerProps> = (
                 />
               )}
             </div>
+
             {calculatedPositions.length === 0 ? (
               <div className="text-center py-12 px-4 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-800 space-y-4">
                 <div className="w-14 h-14 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto">
@@ -534,158 +569,457 @@ export const VirtualPortfolioManager: React.FC<VirtualPortfolioManagerProps> = (
                 </div>
                 <div className="space-y-1">
                   <h4 className="text-base font-extrabold text-slate-900 dark:text-white">
-                    Aucune position fictive pour l'instant
+                    Aucune action dans votre portefeuille pour l'instant
                   </h4>
                   <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
-                    Vous disposez de {formatFCFA(portfolio.currentCash)} de liquidités disponibles pour constituer votre portefeuille BRVM.
+                    Vous disposez de {formatFCFA(portfolio.currentCash)} de liquidités disponibles pour sélectionner des actions de la BRVM.
                   </p>
                 </div>
                 <button
-                  onClick={() => setIsBuyModalOpen(true)}
+                  onClick={() => openBuyModalWithStock()}
                   className="px-5 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs inline-flex items-center gap-2 shadow-md cursor-pointer transition-transform hover:scale-105"
                 >
                   <PlusCircle className="w-4 h-4" />
-                  <span>Passer mon premier ordre d'achat</span>
+                  <span>Sélectionner et ajouter une action</span>
                 </button>
               </div>
             ) : (
-              <div className="overflow-x-auto rounded-2xl border border-slate-200/80 dark:border-slate-800">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-50 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider text-[11px] border-b border-slate-200/80 dark:border-slate-800">
-                    <tr>
-                      <th className="py-3.5 px-4">Action</th>
-                      <th className="py-3.5 px-3 text-right">Titres</th>
-                      <th className="py-3.5 px-3 text-right">PRU</th>
-                      <th className="py-3.5 px-3 text-right">Cours Actuel</th>
-                      <th className="py-3.5 px-3 text-right">Valeur Totale</th>
-                      <th className="py-3.5 px-3 text-right">Plus-Value Latente</th>
-                      <th className="py-3.5 px-3 text-right">Poids</th>
-                      <th className="py-3.5 px-4 text-center">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
-                    {calculatedPositions.map(pos => {
-                      const isGain = pos.unrealizedGainLoss >= 0;
-                      return (
-                        <tr
-                          key={pos.id}
-                          className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors"
-                        >
-                          <td className="py-3.5 px-4">
-                            <div className="flex items-center gap-2.5">
-                              <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-black text-xs flex items-center justify-center shrink-0 border border-slate-200/60 dark:border-slate-700">
-                                {pos.symbol.slice(0, 3)}
-                              </div>
-                              <div>
-                                <div className="font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5">
-                                  <span>{pos.symbol}</span>
-                                  {onNavigate && (
-                                    <button
-                                      onClick={() => onNavigate(`/company/${pos.symbol}`)}
-                                      className="text-slate-400 hover:text-emerald-600"
-                                      title="Consulter la fiche société"
-                                    >
-                                      <ArrowUpRight className="w-3.5 h-3.5" />
-                                    </button>
-                                  )}
+              <div className="space-y-8">
+                {/* ========================================================================= */}
+                {/* SECTION 1: NOM, SYMBOLE SOULIGNÉ, NOMBRE PRIS, COURS ACHAT, COURS ACTUEL, INVESTI, PLUS-VALUE */}
+                {/* ========================================================================= */}
+                <section className="space-y-3 bg-white dark:bg-slate-900/90 rounded-2xl border border-slate-200/90 dark:border-slate-800 p-5 shadow-xs">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-100 dark:border-slate-800">
+                    <div>
+                      <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 text-[10px] font-black uppercase tracking-wider mb-1">
+                        <Building2 className="w-3 h-3" />
+                        SECTION 1 • VUE DÉTAILLÉE DES ACTIONS & COURS DU MARCHÉ
+                      </div>
+                      <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
+                        Actions Détenues, Cours d'Achat & Cotations Officielles
+                      </h3>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        Visualisez chaque action avec son symbole officiel souligné de sa dénomination, la quantité prise, le cours à l'achat et la plus-value actuelle.
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={() => openBuyModalWithStock()}
+                      className="self-start sm:self-auto px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-xs shrink-0"
+                    >
+                      <PlusCircle className="w-3.5 h-3.5" />
+                      <span>Ajouter une action</span>
+                    </button>
+                  </div>
+
+                  <div className="overflow-x-auto rounded-xl border border-slate-200/80 dark:border-slate-800">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-slate-50 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider text-[11px] border-b border-slate-200/80 dark:border-slate-800">
+                        <tr>
+                          <th className="py-3 px-4">Action & Dénomination</th>
+                          <th className="py-3 px-3 text-right">Nombre Pris</th>
+                          <th className="py-3 px-3 text-right">Cours à l'Achat</th>
+                          <th className="py-3 px-3 text-right">Cours Actuel</th>
+                          <th className="py-3 px-3 text-right">Montant Total Investi</th>
+                          <th className="py-3 px-3 text-right">Plus-Value (Gain / Perte)</th>
+                          <th className="py-3 px-4 text-center">Gérer</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
+                        {calculatedPositions.map(pos => {
+                          const isGain = pos.unrealizedGainLoss >= 0;
+                          return (
+                            <tr
+                              key={pos.id}
+                              className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors"
+                            >
+                              {/* Nom de l'action et son symbole (symbole souligné de sa dénomination) */}
+                              <td className="py-3 px-4">
+                                <div className="space-y-0.5">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="font-black text-sm text-slate-900 dark:text-white underline decoration-emerald-500 decoration-2 underline-offset-4 tracking-wide">
+                                      {pos.symbol}
+                                    </span>
+                                    {onNavigate && (
+                                      <button
+                                        onClick={() => onNavigate(`/company/${pos.symbol}`)}
+                                        className="text-slate-400 hover:text-emerald-600 transition-colors cursor-pointer"
+                                        title="Voir la fiche officielle"
+                                      >
+                                        <ArrowUpRight className="w-3.5 h-3.5" />
+                                      </button>
+                                    )}
+                                  </div>
+                                  <div className="text-[11px] text-slate-600 dark:text-slate-300 font-medium truncate max-w-[200px]">
+                                    {pos.companyName}
+                                  </div>
+                                  <span className="inline-block text-[10px] text-slate-400 dark:text-slate-500">
+                                    {pos.sector}
+                                  </span>
                                 </div>
-                                <span className="text-[11px] text-slate-500 dark:text-slate-400 block truncate max-w-[150px]">
+                              </td>
+
+                              {/* Nombre d'actions prises */}
+                              <td className="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-slate-100 text-sm">
+                                {pos.shares.toLocaleString('fr-FR')} <span className="text-[10px] text-slate-400 font-normal">titres</span>
+                              </td>
+
+                              {/* Cours à l'achat (prix de l'action au moment où l'action a été achetée) */}
+                              <td className="py-3 px-3 text-right">
+                                <span className="font-mono font-bold text-slate-800 dark:text-slate-200 block">
+                                  {formatFCFA(pos.averageBuyPrice)}
+                                </span>
+                                <span className="text-[10px] text-slate-400">Prix acquisition</span>
+                              </td>
+
+                              {/* Cours actuel (prix actuel du marché de l'action) */}
+                              <td className="py-3 px-3 text-right">
+                                <span className="font-mono font-black text-slate-900 dark:text-white block">
+                                  {formatFCFA(pos.currentPrice)}
+                                </span>
+                                <span
+                                  className={`text-[10px] font-bold inline-flex items-center gap-0.5 ${
+                                    pos.dayChangePercent >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+                                  }`}
+                                >
+                                  {pos.dayChangePercent >= 0 ? '+' : ''}
+                                  {pos.dayChangePercent}%
+                                </span>
+                              </td>
+
+                              {/* Montant total investi sur l'action */}
+                              <td className="py-3 px-3 text-right font-mono font-extrabold text-slate-900 dark:text-white">
+                                {formatFCFA(pos.totalInvested)}
+                              </td>
+
+                              {/* Plus value (positive ou négative) */}
+                              <td className="py-3 px-3 text-right">
+                                <span
+                                  className={`font-mono font-black text-sm block ${
+                                    isGain ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+                                  }`}
+                                >
+                                  {isGain ? '+' : ''}
+                                  {formatFCFA(pos.unrealizedGainLoss)}
+                                </span>
+                                <span
+                                  className={`text-[11px] font-bold ${
+                                    isGain ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+                                  }`}
+                                >
+                                  {isGain ? '+' : ''}
+                                  {pos.unrealizedGainLossPercent}%
+                                </span>
+                              </td>
+
+                              {/* Actions */}
+                              <td className="py-3 px-4 text-center">
+                                <div className="flex items-center justify-center gap-1.5">
+                                  <button
+                                    onClick={() => openBuyModalWithStock(pos.symbol)}
+                                    className="px-2 py-1 rounded-md bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 text-emerald-800 dark:text-emerald-300 font-bold text-[11px] transition-colors cursor-pointer"
+                                    title="Acheter plus d'actions"
+                                  >
+                                    + Acheter
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setSelectedPositionForSell(pos);
+                                      setSellShares(pos.shares);
+                                      setSellErrorMessage(null);
+                                      setIsSellModalOpen(true);
+                                    }}
+                                    className="px-2 py-1 rounded-md bg-amber-50 dark:bg-amber-950/60 hover:bg-amber-100 text-amber-800 dark:text-amber-300 font-bold text-[11px] transition-colors cursor-pointer"
+                                    title="Vendre cette position"
+                                  >
+                                    Vendre
+                                  </button>
+                                  <button
+                                    onClick={() => setPositionToDelete(pos)}
+                                    className="p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors cursor-pointer"
+                                    title="Supprimer cette action du portefeuille"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+
+                {/* ========================================================================= */}
+                {/* SECTION 2: COURS MOYEN DES ACTIONS & FORMULE PEDAGOGIQUE */}
+                {/* ========================================================================= */}
+                <section className="space-y-4 bg-white dark:bg-slate-900/90 rounded-2xl border border-indigo-200/80 dark:border-indigo-900/60 p-5 shadow-xs">
+                  <div>
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950/80 text-indigo-800 dark:text-indigo-300 text-[10px] font-black uppercase tracking-wider mb-1">
+                      <Calculator className="w-3 h-3" />
+                      SECTION 2 • COURS MOYEN DES ACTIONS & PÉDAGOGIE FINANCIÈRE
+                    </div>
+                    <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
+                      Calcul et Décomposition du Cours Moyen des Actions
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      Découvrez comment est calculé le cours moyen (PRU) de chaque titre présent dans votre portefeuille pour apprendre à évaluer vos points d'entrée.
+                    </p>
+                  </div>
+
+                  {/* IMPORTANT : FORMULE DU COURS MOYEN MISE EN EVIDENCE */}
+                  <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-indigo-50 via-slate-50 to-indigo-50 dark:from-indigo-950/40 dark:via-slate-900 dark:to-indigo-950/30 border-2 border-indigo-300 dark:border-indigo-700 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <span className="px-2 py-0.5 rounded-md bg-indigo-600 text-white text-[10px] font-black uppercase tracking-wider">
+                        IMPORTANT • FORMULE DE CALCUL
+                      </span>
+                      <span className="text-xs font-bold text-indigo-950 dark:text-indigo-200">
+                        Comment calculer le cours moyen d'une action ?
+                      </span>
+                    </div>
+
+                    <div className="p-3.5 rounded-xl bg-white dark:bg-slate-800/90 border border-indigo-200 dark:border-indigo-700/80 shadow-xs">
+                      <div className="text-center font-mono font-black text-sm sm:text-base text-indigo-950 dark:text-indigo-200">
+                        <span className="text-indigo-600 dark:text-indigo-400">Cours moyen des actions</span> = <span className="underline decoration-indigo-400">Cours à l'achat des actions</span> / (divisé par) <span className="underline decoration-indigo-400">le nombre d'actions prises ou ajoutées au portefeuille</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-2.5 text-xs text-slate-700 dark:text-slate-300 leading-relaxed bg-white/70 dark:bg-slate-800/60 p-3 rounded-xl border border-indigo-100 dark:border-indigo-900/50">
+                      <BookOpen className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5" />
+                      <p>
+                        <strong>Apprenez à vous en servir :</strong> Le cours moyen (aussi appelé Prix de Revient Unitaire - PRU) représente le montant réel payé par action. Si vous réalisez plusieurs achats à des prix différents sur un même titre, divisez le montant total déboursé à l'achat par le nombre total de titres obtenus. Ce cours moyen correspond à votre seuil d'équilibre : au-dessus de ce prix, toute hausse du marché génère un profit !
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Tableau des cours moyens calculés */}
+                  <div className="overflow-x-auto rounded-xl border border-slate-200/80 dark:border-slate-800">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-indigo-50/70 dark:bg-indigo-950/40 text-slate-700 dark:text-slate-300 font-bold uppercase tracking-wider text-[11px] border-b border-indigo-100 dark:border-indigo-900/50">
+                        <tr>
+                          <th className="py-3 px-4">Action & Dénomination</th>
+                          <th className="py-3 px-3 text-right">Quantité d'actions prises</th>
+                          <th className="py-3 px-3 text-right">Cours à l'achat des actions (Total)</th>
+                          <th className="py-3 px-4 text-center">Application de la Formule</th>
+                          <th className="py-3 px-4 text-right">Cours Moyen Résultant</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
+                        {calculatedPositions.map(pos => (
+                          <tr key={`cm-${pos.id}`} className="hover:bg-indigo-50/30 dark:hover:bg-slate-800/40">
+                            {/* Nom et symbole souligné de sa dénomination */}
+                            <td className="py-3.5 px-4">
+                              <div className="space-y-0.5">
+                                <span className="font-black text-sm text-slate-900 dark:text-white underline decoration-indigo-500 decoration-2 underline-offset-4 tracking-wide block">
+                                  {pos.symbol}
+                                </span>
+                                <span className="text-[11px] text-slate-600 dark:text-slate-300 font-medium block truncate max-w-[200px]">
                                   {pos.companyName}
                                 </span>
                               </div>
-                            </div>
-                          </td>
+                            </td>
 
-                          <td className="py-3.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-slate-200">
-                            {pos.shares.toLocaleString('fr-FR')}
-                          </td>
+                            {/* Quantité d'actions prises */}
+                            <td className="py-3.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-slate-100">
+                              {pos.shares.toLocaleString('fr-FR')} actions
+                            </td>
 
-                          <td className="py-3.5 px-3 text-right font-mono text-slate-600 dark:text-slate-400">
-                            {formatFCFA(pos.averageBuyPrice)}
-                          </td>
+                            {/* Cours à l'achat des actions (montant total investi) */}
+                            <td className="py-3.5 px-3 text-right font-mono font-semibold text-slate-800 dark:text-slate-200">
+                              {formatFCFA(pos.totalInvested)}
+                            </td>
 
-                          <td className="py-3.5 px-3 text-right">
-                            <span className="font-mono font-bold text-slate-900 dark:text-white block">
-                              {formatFCFA(pos.currentPrice)}
-                            </span>
-                            <span
-                              className={`text-[10px] font-bold ${
-                                pos.dayChangePercent >= 0 ? 'text-emerald-600' : 'text-rose-600'
-                              }`}
-                            >
-                              {pos.dayChangePercent >= 0 ? '+' : ''}
-                              {pos.dayChangePercent}%
-                            </span>
-                          </td>
-
-                          <td className="py-3.5 px-3 text-right font-mono font-extrabold text-slate-900 dark:text-white">
-                            {formatFCFA(pos.currentValue)}
-                          </td>
-
-                          <td className="py-3.5 px-3 text-right">
-                            <span
-                              className={`font-mono font-black block ${
-                                isGain ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
-                              }`}
-                            >
-                              {isGain ? '+' : ''}
-                              {formatFCFA(pos.unrealizedGainLoss)}
-                            </span>
-                            <span
-                              className={`text-[10px] font-bold ${
-                                isGain ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
-                              }`}
-                            >
-                              {isGain ? '+' : ''}
-                              {pos.unrealizedGainLossPercent}%
-                            </span>
-                          </td>
-
-                          <td className="py-3.5 px-3 text-right">
-                            <div className="flex items-center justify-end gap-1.5">
-                              <span className="font-mono text-slate-700 dark:text-slate-300 font-bold">
-                                {pos.weightPercent}%
-                              </span>
-                              <div className="w-10 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden hidden sm:block">
-                                <div
-                                  className="h-full bg-emerald-500 rounded-full"
-                                  style={{ width: `${Math.min(100, pos.weightPercent * 2)}%` }}
-                                />
+                            {/* Démonstration de la formule */}
+                            <td className="py-3.5 px-4 text-center">
+                              <div className="inline-block px-3 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-[11px] font-mono text-indigo-900 dark:text-indigo-200">
+                                {formatFCFA(pos.totalInvested)} ÷ {pos.shares} actions
                               </div>
-                            </div>
-                          </td>
+                            </td>
 
-                          <td className="py-3.5 px-4 text-center">
-                            <div className="flex items-center justify-center gap-1.5">
-                              <button
-                                onClick={() => {
-                                  setSelectedBuySymbol(pos.symbol);
-                                  setIsBuyModalOpen(true);
-                                }}
-                                className="px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 text-emerald-800 dark:text-emerald-300 font-bold text-[11px] transition-colors cursor-pointer"
-                                title="Acheter plus d'actions"
-                              >
-                                + Acheter
-                              </button>
-                              <button
-                                onClick={() => {
-                                  setSelectedPositionForSell(pos);
-                                  setSellShares(pos.shares); // Default: sell all
-                                  setSellErrorMessage(null);
-                                  setIsSellModalOpen(true);
-                                }}
-                                className="px-2.5 py-1 rounded-lg bg-rose-50 dark:bg-rose-950/60 hover:bg-rose-100 text-rose-800 dark:text-rose-300 font-bold text-[11px] transition-colors cursor-pointer"
-                                title="Vendre cette position (partiellement ou totalement)"
-                              >
-                                Vendre
-                              </button>
-                            </div>
-                          </td>
+                            {/* Cours moyen */}
+                            <td className="py-3.5 px-4 text-right">
+                              <span className="font-mono font-black text-sm text-indigo-700 dark:text-indigo-300">
+                                {formatFCFA(pos.averageBuyPrice)}
+                              </span>
+                              <span className="text-[10px] text-slate-400 block">par action</span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+
+                {/* ========================================================================= */}
+                {/* SECTION 3: PLUS-VALUE TOTALE ACTUELLE & QUANTITE D'ACTIONS PRISES */}
+                {/* ========================================================================= */}
+                <section className="space-y-4 bg-white dark:bg-slate-900/90 rounded-2xl border border-amber-200/80 dark:border-amber-900/60 p-5 shadow-xs">
+                  <div>
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/80 text-amber-900 dark:text-amber-300 text-[10px] font-black uppercase tracking-wider mb-1">
+                      <TrendingUp className="w-3 h-3" />
+                      SECTION 3 • PLUS-VALUE TOTALE ACTUELLE & RENTABILITÉ
+                    </div>
+                    <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
+                      Plus-Value Totale Actuelle des Actions et Performance
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      Suivez en direct la plus-value totale dégagée sur vos actions en comparant le cours actuel du marché avec votre cours moyen d'achat.
+                    </p>
+                  </div>
+
+                  {/* IMPORTANT : FORMULE DE LA PLUS-VALUE TOTALE MISE EN EVIDENCE */}
+                  <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-50 via-slate-50 to-amber-50 dark:from-amber-950/40 dark:via-slate-900 dark:to-amber-950/30 border-2 border-amber-300 dark:border-amber-700 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <span className="px-2 py-0.5 rounded-md bg-amber-500 text-slate-950 text-[10px] font-black uppercase tracking-wider">
+                        IMPORTANT • FORMULE DE CALCUL
+                      </span>
+                      <span className="text-xs font-bold text-amber-950 dark:text-amber-200">
+                        Comment calculer la plus-value totale des actions ?
+                      </span>
+                    </div>
+
+                    <div className="p-3.5 rounded-xl bg-white dark:bg-slate-800/90 border border-amber-200 dark:border-amber-700/80 shadow-xs space-y-2">
+                      <div className="text-center font-mono font-black text-sm sm:text-base text-amber-950 dark:text-amber-200">
+                        <span className="text-amber-700 dark:text-amber-400">Plus value actuelle</span> = <span className="underline decoration-amber-400">cours actuel des actions (cours actuel sur le marché)</span> - (moins) <span className="underline decoration-amber-400">cours moyen des actions</span>
+                      </div>
+                      <div className="text-center font-mono text-xs text-slate-600 dark:text-slate-400">
+                        <strong>Plus-value totale du portefeuille</strong> = Plus-value actuelle unitaire × Quantité d'actions prises
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-2.5 text-xs text-slate-700 dark:text-slate-300 leading-relaxed bg-white/70 dark:bg-slate-800/60 p-3 rounded-xl border border-amber-100 dark:border-amber-900/50">
+                      <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                      <p>
+                        <strong>Apprenez à vous en servir :</strong> La plus-value mesure votre enrichissement potentiel. Lorsque le cours actuel sur le marché de la BRVM dépasse votre cours moyen, vous dégagez une plus-value positive (gain de capital). Si le cours de marché passe en-dessous, vous êtes en moins-value latente temporaire. En bourse, tant que l'action n'est pas vendue, le gain ou la perte reste non matérialisé.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Tableau des plus-values totales */}
+                  <div className="overflow-x-auto rounded-xl border border-slate-200/80 dark:border-slate-800">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-amber-50/70 dark:bg-amber-950/40 text-slate-700 dark:text-slate-300 font-bold uppercase tracking-wider text-[11px] border-b border-amber-100 dark:border-amber-900/50">
+                        <tr>
+                          <th className="py-3 px-4">Action & Dénomination</th>
+                          <th className="py-3 px-3 text-right">Quantité d'actions prises</th>
+                          <th className="py-3 px-3 text-right">Cours Moyen</th>
+                          <th className="py-3 px-3 text-right">Cours Actuel Marché</th>
+                          <th className="py-3 px-3 text-right">Écart Unitaire</th>
+                          <th className="py-3 px-4 text-right">Plus-Value Totale Actuelle</th>
+                          <th className="py-3 px-4 text-center">Statut</th>
                         </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
+                        {calculatedPositions.map(pos => {
+                          const unitGain = pos.currentPrice - pos.averageBuyPrice;
+                          const isGain = unitGain >= 0;
+                          return (
+                            <tr key={`pv-${pos.id}`} className="hover:bg-amber-50/30 dark:hover:bg-slate-800/40">
+                              {/* Nom et symbole souligné de sa dénomination */}
+                              <td className="py-3.5 px-4">
+                                <div className="space-y-0.5">
+                                  <span className="font-black text-sm text-slate-900 dark:text-white underline decoration-amber-500 decoration-2 underline-offset-4 tracking-wide block">
+                                    {pos.symbol}
+                                  </span>
+                                  <span className="text-[11px] text-slate-600 dark:text-slate-300 font-medium block truncate max-w-[200px]">
+                                    {pos.companyName}
+                                  </span>
+                                </div>
+                              </td>
+
+                              {/* Quantité d'actions prises */}
+                              <td className="py-3.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-slate-100">
+                                {pos.shares.toLocaleString('fr-FR')} actions
+                              </td>
+
+                              {/* Cours moyen */}
+                              <td className="py-3.5 px-3 text-right font-mono text-slate-600 dark:text-slate-400">
+                                {formatFCFA(pos.averageBuyPrice)}
+                              </td>
+
+                              {/* Cours actuel sur le marché */}
+                              <td className="py-3.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">
+                                {formatFCFA(pos.currentPrice)}
+                              </td>
+
+                              {/* Écart unitaire (Cours actuel - Cours moyen) */}
+                              <td className="py-3.5 px-3 text-right font-mono font-bold">
+                                <span className={isGain ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}>
+                                  {isGain ? '+' : ''}{formatFCFA(unitGain)}
+                                </span>
+                              </td>
+
+                              {/* Plus-value totale de la position */}
+                              <td className="py-3.5 px-4 text-right font-mono">
+                                <span
+                                  className={`text-base font-black block ${
+                                    isGain ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+                                  }`}
+                                >
+                                  {isGain ? '+' : ''}
+                                  {formatFCFA(pos.unrealizedGainLoss)}
+                                </span>
+                                <span
+                                  className={`text-[10px] font-bold ${
+                                    isGain ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+                                  }`}
+                                >
+                                  {isGain ? '+' : ''}
+                                  {pos.unrealizedGainLossPercent}%
+                                </span>
+                              </td>
+
+                              {/* Statut */}
+                              <td className="py-3.5 px-4 text-center">
+                                <span
+                                  className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase ${
+                                    isGain
+                                      ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                                      : 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
+                                  }`}
+                                >
+                                  {isGain ? 'Gain Réalisable' : 'Moins-Value'}
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Synthèse globale consolidée */}
+                  <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="text-xs text-slate-600 dark:text-slate-300 space-y-0.5">
+                      <div>Total des titres : <strong>{calculatedPositions.reduce((acc, p) => acc + p.shares, 0).toLocaleString('fr-FR')} actions</strong></div>
+                      <div>Montant global investi à l'achat : <strong>{formatFCFA(kpis.totalInvested)}</strong></div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <div className="text-right">
+                        <span className="text-[10px] uppercase font-bold text-slate-500 block">Plus-Value Totale Portefeuille</span>
+                        <span
+                          className={`text-xl font-black font-mono ${
+                            kpis.unrealizedGainLoss >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+                          }`}
+                        >
+                          {kpis.unrealizedGainLoss >= 0 ? '+' : ''}
+                          {formatFCFA(kpis.unrealizedGainLoss)}
+                        </span>
+                      </div>
+                      <span
+                        className={`px-3 py-1.5 rounded-xl text-xs font-black font-mono ${
+                          kpis.unrealizedGainLoss >= 0
+                            ? 'bg-emerald-600 text-white'
+                            : 'bg-rose-600 text-white'
+                        }`}
+                      >
+                        {kpis.unrealizedGainLoss >= 0 ? '+' : ''}{kpis.unrealizedGainLossPercent}%
+                      </span>
+                    </div>
+                  </div>
+                </section>
               </div>
             )}
           </div>
@@ -928,10 +1262,13 @@ export const VirtualPortfolioManager: React.FC<VirtualPortfolioManagerProps> = (
       {/* ========================================================================= */}
       {/* MODAL 1: BUY ORDER MODAL */}
       {/* ========================================================================= */}
+      {/* ========================================================================= */}
+      {/* MODAL 1: BUY ORDER MODAL - 4 ETAPES DE SELECTION & AJOUT D'ACTIONS */}
+      {/* ========================================================================= */}
       <Modal
         isOpen={isBuyModalOpen}
         onClose={() => setIsBuyModalOpen(false)}
-        title="Passer un Ordre d'Achat Fictif (BRVM)"
+        title="Ajouter des Actions au Portefeuille BRVM"
       >
         <form onSubmit={handleExecuteBuy} className="space-y-4 text-xs">
           {buyErrorMessage && (
@@ -944,61 +1281,80 @@ export const VirtualPortfolioManager: React.FC<VirtualPortfolioManagerProps> = (
           {/* Available Cash banner */}
           <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 flex items-center justify-between">
             <span className="text-emerald-900 dark:text-emerald-200 font-bold">
-              Liquidités disponibles :
+              Liquidités disponibles pour investissement :
             </span>
             <span className="font-mono font-black text-emerald-700 dark:text-emerald-300 text-sm">
               {formatFCFA(portfolio.currentCash)}
             </span>
           </div>
 
-          {/* Select stock */}
+          {/* Étape 1 : Sélectionner l'action dans la liste des actions de la BRVM */}
           <div>
-            <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
-              Sélectionnez une action de la BRVM *
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="font-bold text-slate-800 dark:text-slate-200">
+                1. Sélectionner l'action dans la liste des actions de la BRVM *
+              </label>
+              <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold">
+                Sélectionnée : {selectedBuyCompany.symbol}
+              </span>
+            </div>
+
             <div className="relative mb-2">
               <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
               <input
                 type="text"
-                placeholder="Rechercher par nom ou symbole (ex: Sonatel, ORAC)..."
+                placeholder="Rechercher par symbole ou dénomination (ex: Sonatel, ORAC, SIVC)..."
                 value={buyStockSearch}
                 onChange={e => setBuyStockSearch(e.target.value)}
                 className="w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-emerald-500 font-medium"
               />
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-40 overflow-y-auto pr-1">
-              {filteredBuyCompanies.slice(0, 15).map(comp => (
-                <button
-                  key={comp.symbol}
-                  type="button"
-                  onClick={() => setSelectedBuySymbol(comp.symbol)}
-                  className={`p-2 rounded-xl text-left border transition-all cursor-pointer ${
-                    selectedBuySymbol.toUpperCase() === comp.symbol.toUpperCase()
-                      ? 'border-emerald-600 bg-emerald-50 dark:bg-emerald-950/60 ring-2 ring-emerald-500/50'
-                      : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800'
-                  }`}
-                >
-                  <div className="font-black text-xs text-slate-900 dark:text-white">
-                    {comp.symbol}
-                  </div>
-                  <div className="text-[10px] text-slate-500 truncate">{comp.name}</div>
-                  <div className="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-[11px] mt-0.5">
-                    {formatFCFA(comp.currentPrice)}
-                  </div>
-                </button>
-              ))}
+            {/* Liste des actions : symbole affiché et souligné de sa dénomination */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-44 overflow-y-auto pr-1">
+              {filteredBuyCompanies.slice(0, 18).map(comp => {
+                const isSelected = selectedBuySymbol.toUpperCase() === comp.symbol.toUpperCase();
+                return (
+                  <button
+                    key={comp.symbol}
+                    type="button"
+                    onClick={() => {
+                      setSelectedBuySymbol(comp.symbol);
+                      setCustomBuyPrice(comp.currentPrice);
+                    }}
+                    className={`p-2.5 rounded-xl text-left border transition-all cursor-pointer ${
+                      isSelected
+                        ? 'border-emerald-600 bg-emerald-50 dark:bg-emerald-950/70 ring-2 ring-emerald-500/50'
+                        : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    {/* Symbole de l'action affiché et souligné de sa dénomination */}
+                    <div className="font-black text-sm text-slate-900 dark:text-white underline decoration-emerald-500 decoration-2 underline-offset-4 tracking-wide">
+                      {comp.symbol}
+                    </div>
+                    <div className="text-[11px] text-slate-600 dark:text-slate-400 font-medium truncate mt-1">
+                      {comp.name}
+                    </div>
+                    <div className="flex items-center justify-between text-[10px] font-mono mt-1 text-slate-500 dark:text-slate-400">
+                      <span className="truncate max-w-[120px]">{comp.sector}</span>
+                      <span className="font-bold text-emerald-600 dark:text-emerald-400 text-xs">
+                        {formatFCFA(comp.currentPrice)}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          {/* Quantity selector */}
-          <div className="space-y-1.5">
+          {/* Étape 2 : Définir le nombre d'actions */}
+          <div className="space-y-1.5 pt-1">
             <div className="flex justify-between items-center">
-              <label className="font-bold text-slate-700 dark:text-slate-300">
-                Nombre d'actions à acheter *
+              <label className="font-bold text-slate-800 dark:text-slate-200">
+                2. Définir le nombre d'actions à prendre *
               </label>
               <span className="text-slate-500 text-[11px]">
-                Cours actuel : <strong>{formatFCFA(selectedBuyCompany.currentPrice)}</strong>
+                Quantité souhaitée
               </span>
             </div>
 
@@ -1012,7 +1368,7 @@ export const VirtualPortfolioManager: React.FC<VirtualPortfolioManagerProps> = (
             />
 
             {/* Quick percent buttons */}
-            <div className="flex items-center gap-2 pt-1">
+            <div className="flex items-center gap-2 pt-0.5">
               {[
                 { label: '10%', frac: 0.1 },
                 { label: '25%', frac: 0.25 },
@@ -1024,7 +1380,8 @@ export const VirtualPortfolioManager: React.FC<VirtualPortfolioManagerProps> = (
                   type="button"
                   onClick={() => {
                     const budget = portfolio.currentCash * btn.frac;
-                    const possibleShares = Math.max(1, Math.floor(budget / (selectedBuyCompany.currentPrice * 1.006)));
+                    const price = effectiveBuyPrice > 0 ? effectiveBuyPrice : selectedBuyCompany.currentPrice;
+                    const possibleShares = Math.max(1, Math.floor(budget / (price * 1.006)));
                     setBuyShares(possibleShares);
                   }}
                   className="flex-1 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-[10px] transition-colors"
@@ -1035,10 +1392,38 @@ export const VirtualPortfolioManager: React.FC<VirtualPortfolioManagerProps> = (
             </div>
           </div>
 
-          {/* Cost breakdown */}
+          {/* Étape 3 : Indiquer le cours à l'achat */}
+          <div className="space-y-1.5 pt-1">
+            <div className="flex justify-between items-center">
+              <label className="font-bold text-slate-800 dark:text-slate-200">
+                3. Indiquer le cours à l'achat (prix au moment de l'achat en FCFA) *
+              </label>
+              <button
+                type="button"
+                onClick={() => setCustomBuyPrice(selectedBuyCompany.currentPrice)}
+                className="text-[11px] text-emerald-600 dark:text-emerald-400 hover:underline font-bold"
+              >
+                Cours du jour ({formatFCFA(selectedBuyCompany.currentPrice)})
+              </button>
+            </div>
+
+            <input
+              type="number"
+              min={1}
+              required
+              value={effectiveBuyPrice}
+              onChange={e => setCustomBuyPrice(Math.max(1, parseInt(e.target.value, 10) || 1))}
+              className="w-full p-2.5 text-base font-mono font-black text-center bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-emerald-500"
+            />
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+              Prix unitaire de l'action au moment où l'action a été achetée. Pré-rempli avec le cours actuel officiel du marché BRVM ({formatFCFA(selectedBuyCompany.currentPrice)}), modifiable selon votre cours d'acquisition effectif.
+            </p>
+          </div>
+
+          {/* Étape 4 : Récapitulatif du coût & Validation */}
           <div className="p-3.5 rounded-2xl bg-slate-100 dark:bg-slate-800/80 space-y-1.5 border border-slate-200 dark:border-slate-700">
             <div className="flex justify-between text-slate-600 dark:text-slate-400">
-              <span>Montant brut des titres ({buyShares} × {formatFCFA(selectedBuyCompany.currentPrice)}) :</span>
+              <span>Montant des titres ({buyShares} × {formatFCFA(effectiveBuyPrice)}) :</span>
               <span className="font-mono font-bold text-slate-900 dark:text-white">{formatFCFA(buyGross)}</span>
             </div>
             <div className="flex justify-between text-slate-600 dark:text-slate-400">
@@ -1057,7 +1442,7 @@ export const VirtualPortfolioManager: React.FC<VirtualPortfolioManagerProps> = (
               disabled={!canAffordBuy}
               className="flex-1 bg-emerald-600 hover:bg-emerald-500 font-bold"
             >
-              Confirmer l'achat ({formatFCFA(buyNet)})
+              Valider l'ajout d'actions ({formatFCFA(buyNet)})
             </Button>
             <Button
               type="button"
@@ -1068,6 +1453,49 @@ export const VirtualPortfolioManager: React.FC<VirtualPortfolioManagerProps> = (
             </Button>
           </div>
         </form>
+      </Modal>
+
+      {/* ========================================================================= */}
+      {/* MODAL CONFIRMATION SUPPRESSION ACTION */}
+      {/* ========================================================================= */}
+      <Modal
+        isOpen={positionToDelete !== null}
+        onClose={() => setPositionToDelete(null)}
+        title="Supprimer une Action du Portefeuille"
+      >
+        {positionToDelete && (
+          <div className="space-y-4 text-xs">
+            <div className="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-900 dark:text-rose-200 flex items-start gap-2.5">
+              <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <p className="font-extrabold text-sm">
+                  Confirmer la suppression de {positionToDelete.symbol} ?
+                </p>
+                <p className="leading-relaxed">
+                  Vous vous apprêtez à supprimer la ligne <strong>{positionToDelete.companyName}</strong> ({positionToDelete.shares} actions).
+                  Le capital investi initialement de <strong>{formatFCFA(positionToDelete.totalInvested)}</strong> sera réintégré dans vos liquidités disponibles.
+                </p>
+              </div>
+            </div>
+
+            <div className="pt-2 flex items-center gap-2">
+              <Button
+                type="button"
+                onClick={handleConfirmDeletePosition}
+                className="flex-1 bg-rose-600 hover:bg-rose-500 font-bold text-white"
+              >
+                Confirmer la suppression
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setPositionToDelete(null)}
+              >
+                Annuler
+              </Button>
+            </div>
+          </div>
+        )}
       </Modal>
 
       {/* ========================================================================= */}

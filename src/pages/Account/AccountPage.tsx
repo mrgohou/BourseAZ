@@ -160,9 +160,6 @@ export const AccountPage: React.FC<AccountPageProps> = ({ onNavigate }) => {
     <div className="space-y-6 pb-14">
       {/* SECTION 1: Institutional Client Header Banner */}
       <section className="relative overflow-hidden bg-gradient-to-br from-emerald-950 via-teal-950 to-emerald-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-emerald-800 flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="absolute -right-20 -top-20 w-80 h-80 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -left-20 -bottom-20 w-80 h-80 bg-teal-500/15 rounded-full blur-3xl pointer-events-none" />
-
         <div className="relative z-10 flex items-center gap-4 sm:gap-5">
           <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-emerald-800 border-2 border-emerald-500/50 text-white font-black text-2xl flex items-center justify-center shadow-lg shrink-0 overflow-hidden">
             {user.photoUrl ? (

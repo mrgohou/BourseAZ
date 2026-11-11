@@ -554,3 +554,26 @@ export function resetVirtualPortfolio(
     updatedAt: now,
   };
 }
+
+/**
+ * Deletes a position from the portfolio and refunds the invested cash
+ */
+export function deletePositionFromPortfolio(
+  portfolio: VirtualPortfolio,
+  symbol: string
+): VirtualPortfolio {
+  const symbolUpper = symbol.toUpperCase();
+  const existing = portfolio.positions.find(p => p.symbol.toUpperCase() === symbolUpper);
+  if (!existing) return portfolio;
+
+  const refundAmount = existing.totalInvested;
+  const newPositions = portfolio.positions.filter(p => p.symbol.toUpperCase() !== symbolUpper);
+
+  return {
+    ...portfolio,
+    currentCash: portfolio.currentCash + refundAmount,
+    positions: newPositions,
+    updatedAt: new Date().toISOString(),
+  };
+}
+

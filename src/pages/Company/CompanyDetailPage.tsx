@@ -7,7 +7,7 @@ import { SkeletonCompanyDetail } from '../../components/ui/Skeleton';
 import { FinancialMetricCard } from '../../components/finance/FinancialMetricCard';
 import { LifecycleStageCard } from '../../components/finance/LifecycleStageCard';
 import { PERExplanationModal } from '../../components/finance/PERExplanationModal';
-import { PriceHistoryChart } from '../../components/charts/PriceHistoryChart';
+import { StockPriceHistoryM3Chart } from '../../components/charts/StockPriceHistoryM3Chart';
 import { DividendHistoryChart } from '../../components/charts/DividendHistoryChart';
 import { DividendProjectionModule } from '../../components/finance/DividendProjectionModule';
 import { CompanyReportsModal } from '../../components/finance/CompanyReportsModal';
@@ -470,8 +470,14 @@ export const CompanyDetailPage: React.FC<CompanyDetailPageProps> = ({ symbol, on
         />
       </div>
 
-      {/* Interactive Price History Chart (Recharts) */}
-      <PriceHistoryChart data={historicalPrices} companySymbol={company.symbol} />
+      {/* Interactive Stock Price History Chart (Recharts • Material Design 3) */}
+      <StockPriceHistoryM3Chart
+        data={historicalPrices}
+        companySymbol={company.symbol}
+        companyName={company.name}
+        ipoPrice={company.ipoPrice}
+        ipoDate={company.ipoDate}
+      />
 
       {/* Dividend Projection Module */}
       <DividendProjectionModule
