@@ -1,0 +1,2 @@
+Revue des composants réels de la version 0.0.3. Données issues des pages officielles BRVM vérifiées le 11 novembre 2026. Les comptes et achats utilisés dans la revue sont fictifs et limités à l’outil de capture ; ils ne sont pas intégrés à l’APK. Aucune connexion Google réelle n’est prétendue par ces captures. La synchronisation SGI n’est pas activée.
+Ouvrir INDEX.html pour parcourir les vingt captures.
