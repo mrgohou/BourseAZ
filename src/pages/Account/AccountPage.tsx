@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../../features/auth/AuthContext';
 import { Button } from '../../components/ui/Button';
 import { PriceAlertsManager } from '../../components/alerts/PriceAlertsManager';
@@ -6,6 +6,8 @@ import { PortfolioPerformanceChart } from '../../components/dashboard/PortfolioP
 import { PersonalizedStockSuggestions } from '../../components/profile/PersonalizedStockSuggestions';
 import { InvestorProfileModule } from '../../components/profile/InvestorProfileModule';
 import { VirtualPortfolioManager } from '../../components/portfolio/VirtualPortfolioManager';
+import { ClientDashboardChartsM3 } from '../../components/dashboard/ClientDashboardChartsM3';
+import { getInitialVirtualPortfolio, calculatePortfolioKPIs } from '../../services/virtual-portfolio/virtualPortfolioService';
 import { formatFCFA, formatDateFrench } from '../../lib/formatters';
 import { exportSimulationToPDF, exportSimulationToCSV } from '../../lib/export';
 import { BRVM_SGI_LIST } from '../../data/sgi-data';
@@ -46,6 +48,7 @@ import { PROFILE_DEFINITIONS } from '../../services/investor-profile/investorPro
 
 interface AccountPageProps {
   onNavigate: (path: string) => void;
+  initialSection?: 'DASHBOARD' | 'PORTFOLIO' | 'PROFILE' | 'SIMULATIONS' | 'ALERTS' | 'SGIS' | 'SECURITY' | 'ALL';
 }
 
 interface EmailDeliveryRecord {
@@ -59,7 +62,7 @@ interface EmailDeliveryRecord {
   previewUrl?: string;
 }
 
-export const AccountPage: React.FC<AccountPageProps> = ({ onNavigate }) => {
+export const AccountPage: React.FC<AccountPageProps> = ({ onNavigate, initialSection }) => {
   const {
     user,
     isAuthenticated,
@@ -77,7 +80,33 @@ export const AccountPage: React.FC<AccountPageProps> = ({ onNavigate }) => {
 
   const [activeSection, setActiveSection] = useState<
     'DASHBOARD' | 'PORTFOLIO' | 'PROFILE' | 'SIMULATIONS' | 'ALERTS' | 'SGIS' | 'SECURITY' | 'ALL'
-  >('DASHBOARD');
+  >(() => {
+    if (initialSection) return initialSection;
+    if (typeof window !== 'undefined') {
+      const search = new URLSearchParams(window.location.search);
+      const tab = (search.get('tab') || search.get('section') || '').toUpperCase();
+      if (['DASHBOARD', 'PORTFOLIO', 'PROFILE', 'SIMULATIONS', 'ALERTS', 'SGIS', 'SECURITY', 'ALL'].includes(tab)) {
+        return tab as any;
+      }
+    }
+    return 'DASHBOARD';
+  });
+
+  useEffect(() => {
+    if (initialSection) {
+      setActiveSection(initialSection);
+    }
+  }, [initialSection]);
+
+  // Real user virtual portfolio & KPIs
+  const userPortfolio = useMemo(() => {
+    return getInitialVirtualPortfolio(user?.id || 'guest');
+  }, [user?.id]);
+
+  const { kpis: portfolioKPIs } = useMemo(() => {
+    return calculatePortfolioKPIs(userPortfolio);
+  }, [userPortfolio]);
+
   const [isEditingProfileQuiz, setIsEditingProfileQuiz] = useState<boolean>(false);
   const [emailStatusMsg, setEmailStatusMsg] = useState<string | null>(null);
   const [isSendingEmail, setIsSendingEmail] = useState<boolean>(false);
@@ -369,7 +398,7 @@ export const AccountPage: React.FC<AccountPageProps> = ({ onNavigate }) => {
         <section className="space-y-6">
           {/* 4 Financial KPI Stat Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Card 1: Portefeuille Virtuel */}
+            {/* Card 1: Portefeuille Virtuel Réel */}
             <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between">
               <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
                 <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
@@ -380,14 +409,18 @@ export const AccountPage: React.FC<AccountPageProps> = ({ onNavigate }) => {
                 </div>
               </div>
               <div className="py-3">
-                <span className="text-xl font-black text-slate-900 dark:text-white block">
-                  {totalSimulatedFinal > 0 ? formatFCFA(totalSimulatedFinal) : '5 000 000 FCFA'}
+                <span className="text-xl font-black text-slate-900 dark:text-white block font-mono">
+                  {formatFCFA(portfolioKPIs?.totalValue ?? 0)}
                 </span>
-                <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                  {savedSimulations.length > 0
-                    ? `${savedSimulations.length} simulation(s) active(s)`
-                    : 'Solde virtuel de démarrage disponible'}
-                </span>
+                <div className="flex items-center gap-2 mt-1 flex-wrap">
+                  <span className={`text-[11px] font-bold ${(portfolioKPIs?.unrealizedGainLoss ?? 0) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                    {(portfolioKPIs?.unrealizedGainLoss ?? 0) >= 0 ? '+' : ''}{formatFCFA(portfolioKPIs?.unrealizedGainLoss ?? 0)} ({(portfolioKPIs?.unrealizedGainLossPercent ?? 0) >= 0 ? '+' : ''}{(portfolioKPIs?.unrealizedGainLossPercent ?? 0).toFixed(2)}%)
+                  </span>
+                  <span className="text-[11px] text-slate-400">·</span>
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                    {portfolioKPIs?.positionsCount ?? 0} position{(portfolioKPIs?.positionsCount ?? 0) > 1 ? 's' : ''}
+                  </span>
+                </div>
               </div>
               <button
                 onClick={() => setActiveSection('PORTFOLIO')}
@@ -536,7 +569,10 @@ export const AccountPage: React.FC<AccountPageProps> = ({ onNavigate }) => {
             </div>
           </div>
 
-          {/* D3 / Recharts Portfolio Performance Chart Component */}
+          {/* M3 Interactive Charts for Client Dashboard */}
+          <ClientDashboardChartsM3 portfolio={userPortfolio} onNavigate={onNavigate} />
+
+          {/* D3 / Recharts DCA Simulations Performance Chart */}
           <PortfolioPerformanceChart simulations={savedSimulations} onNavigate={onNavigate} />
         </section>
       )}
@@ -656,9 +692,26 @@ export const AccountPage: React.FC<AccountPageProps> = ({ onNavigate }) => {
             </div>
 
             {savedSimulations.length === 0 ? (
-              <p className="text-xs text-slate-400 italic py-6 text-center">
-                Aucune simulation enregistrée pour le moment.
-              </p>
+              <div className="text-center py-10 px-4 space-y-3 bg-slate-50/50 dark:bg-slate-800/30 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">
+                <div className="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto">
+                  <Calculator className="w-6 h-6" />
+                </div>
+                <div className="space-y-1">
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                    Aucune simulation enregistrée
+                  </h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto">
+                    Votre espace est propre et prêt pour vos stratégies d'investissement réelles. Lancez une simulation pour calculer vos rendements prévisionnels.
+                  </p>
+                </div>
+                <button
+                  onClick={() => onNavigate('/simulation')}
+                  className="h-9 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+                >
+                  <Calculator className="w-3.5 h-3.5" />
+                  <span>+ Créer ma première simulation</span>
+                </button>
+              </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {savedSimulations.map(sim => (

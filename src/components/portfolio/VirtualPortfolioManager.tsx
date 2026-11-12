@@ -52,6 +52,7 @@ import { DEMO_COMPANIES } from '../../data/demo-data';
 import {
   loadVirtualPortfolio,
   saveVirtualPortfolio,
+  getInitialVirtualPortfolio,
   calculatePortfolioKPIs,
   executeBuyOrder,
   executeSellOrder,
@@ -62,6 +63,7 @@ import {
 import { formatFCFA, formatPercent, formatDateFrench } from '../../lib/formatters';
 import { exportVirtualPortfolioToCSV, exportVirtualPortfolioToPDF } from '../../lib/export';
 import { D3PortfolioBalanceChart } from './D3PortfolioBalanceChart';
+import { PortfolioInvestmentDonutChartM3 } from './PortfolioInvestmentDonutChartM3';
 import { DailyMarketSessionBadge } from '../finance/DailyMarketSessionBadge';
 import { useMarketData } from '../../features/market/MarketContext';
 import { Modal } from '../ui/Modal';
@@ -76,9 +78,9 @@ export const VirtualPortfolioManager: React.FC<VirtualPortfolioManagerProps> = (
   const userId = user?.id || 'guest';
 
   const [portfolio, setPortfolio] = useState<VirtualPortfolio>(() =>
-    loadVirtualPortfolio(userId) as unknown as VirtualPortfolio
+    getInitialVirtualPortfolio(userId)
   );
-  const [activeTab, setActiveTab] = useState<'POSITIONS' | 'ANALYTICS' | 'TRANSACTIONS'>('POSITIONS');
+  const [activeTab, setActiveTab] = useState<'RESUME' | 'POSITIONS' | 'ANALYTICS' | 'TRANSACTIONS'>('RESUME');
   const [showD3ChartOverview, setShowD3ChartOverview] = useState(true);
 
   // Modals state
@@ -111,11 +113,15 @@ export const VirtualPortfolioManager: React.FC<VirtualPortfolioManagerProps> = (
   // Load portfolio on mount or when user changes
   useEffect(() => {
     let mounted = true;
-    loadVirtualPortfolio(userId).then(p => {
-      if (mounted && p) {
-        setPortfolio(p);
-      }
-    });
+    loadVirtualPortfolio(userId)
+      .then(p => {
+        if (mounted && p && Array.isArray(p.positions)) {
+          setPortfolio(p);
+        }
+      })
+      .catch(err => {
+        console.warn('Erreur chargement portfolio:', err);
+      });
     return () => {
       mounted = false;
     };
@@ -375,6 +381,25 @@ export const VirtualPortfolioManager: React.FC<VirtualPortfolioManagerProps> = (
       </div>
 
       <div className="p-6 sm:p-8 space-y-6">
+        {/* En-tête Section Résumé du Portefeuille */}
+        <div className="flex items-center justify-between pb-1">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[11px] font-black uppercase tracking-wider">
+              <Wallet className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              SECTION RÉSUMÉ DU PORTEFEUILLE
+            </span>
+          </div>
+          {activeTab !== 'RESUME' && (
+            <button
+              onClick={() => setActiveTab('RESUME')}
+              className="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1 cursor-pointer"
+            >
+              <PieChartIcon className="w-3.5 h-3.5" />
+              <span>Voir le Donut de répartition</span>
+            </button>
+          )}
+        </div>
+
         {/* KPI Summary Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Card 1: Total Portfolio Value */}
@@ -484,10 +509,22 @@ export const VirtualPortfolioManager: React.FC<VirtualPortfolioManagerProps> = (
         </div>
 
         {/* Main Tab Navigation */}
-        <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
+        <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-3 overflow-x-auto">
+          <button
+            onClick={() => setActiveTab('RESUME')}
+            className={`px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
+              activeTab === 'RESUME'
+                ? 'bg-emerald-600 text-white shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+            }`}
+          >
+            <PieChartIcon className="w-4 h-4" />
+            <span>Résumé & Donut M3</span>
+          </button>
+
           <button
             onClick={() => setActiveTab('POSITIONS')}
-            className={`px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
+            className={`px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
               activeTab === 'POSITIONS'
                 ? 'bg-emerald-600 text-white shadow-xs'
                 : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -499,7 +536,7 @@ export const VirtualPortfolioManager: React.FC<VirtualPortfolioManagerProps> = (
 
           <button
             onClick={() => setActiveTab('ANALYTICS')}
-            className={`px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
+            className={`px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
               activeTab === 'ANALYTICS'
                 ? 'bg-indigo-600 text-white shadow-xs'
                 : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -511,7 +548,7 @@ export const VirtualPortfolioManager: React.FC<VirtualPortfolioManagerProps> = (
 
           <button
             onClick={() => setActiveTab('TRANSACTIONS')}
-            className={`px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
+            className={`px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
               activeTab === 'TRANSACTIONS'
                 ? 'bg-amber-500 text-slate-950 font-black shadow-xs'
                 : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -524,13 +561,91 @@ export const VirtualPortfolioManager: React.FC<VirtualPortfolioManagerProps> = (
           {onNavigate && (
             <button
               onClick={() => onNavigate('/calendrier-dividendes')}
-              className="ml-auto px-3.5 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-500/30 transition-all cursor-pointer"
+              className="ml-auto px-3.5 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-500/30 transition-all cursor-pointer shrink-0"
             >
               <Calendar className="w-3.5 h-3.5" />
               <span>Calendrier Dividendes</span>
             </button>
           )}
         </div>
+
+        {/* TAB 0: RESUME & GRAPHIQUE EN ANNEAU (DONUT CHART M3) */}
+        {activeTab === 'RESUME' && (
+          <div className="space-y-6">
+            {/* Material Design 3 Donut Chart: Répartition des investissements par action */}
+            <PortfolioInvestmentDonutChartM3
+              calculatedPositions={calculatedPositions}
+              kpis={kpis}
+              currentCash={portfolio.currentCash}
+              onSelectStock={(sym) => {
+                if (onNavigate) {
+                  onNavigate(`/company/${sym}`);
+                } else {
+                  openBuyModalWithStock(sym);
+                }
+              }}
+              onBuyStock={(sym) => openBuyModalWithStock(sym)}
+              onSellStock={(pos) => {
+                setSelectedPositionForSell(pos);
+                setSellShares(pos.shares);
+                setSellErrorMessage(null);
+                setIsSellModalOpen(true);
+              }}
+            />
+
+            {/* D3 Portfolio Balance Progression Chart */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between px-1">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                  <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  Progression du solde en temps réel (D3.js)
+                </span>
+                <button
+                  onClick={() => setShowD3ChartOverview(!showD3ChartOverview)}
+                  className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer"
+                >
+                  {showD3ChartOverview ? 'Masquer la courbe D3' : 'Afficher la courbe D3'}
+                </button>
+              </div>
+
+              {showD3ChartOverview && (
+                <D3PortfolioBalanceChart
+                  initialCash={portfolio.initialCash}
+                  currentCash={portfolio.currentCash}
+                  currentTotalValue={kpis.totalValue}
+                  totalInvested={kpis.totalInvested}
+                  createdAt={portfolio.createdAt}
+                  transactionsCount={portfolio.transactions.length}
+                />
+              )}
+            </div>
+
+            {/* Quick Access Card to the 3 Pedagogical Sections */}
+            <div className="p-5 rounded-2xl bg-gradient-to-r from-emerald-50 via-teal-50 to-slate-50 dark:from-emerald-950/40 dark:via-teal-950/30 dark:to-slate-900 border border-emerald-200/80 dark:border-emerald-800/60 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3.5">
+                <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                  <Building2 className="w-5 h-5" />
+                </div>
+                <div className="space-y-0.5">
+                  <h4 className="text-sm font-black text-slate-900 dark:text-white">
+                    {calculatedPositions.length} position(s) active(s) en portefeuille
+                  </h4>
+                  <p className="text-xs text-slate-600 dark:text-slate-300">
+                    Découvrez les 3 sections : cotations officielles soulignées, formule du cours moyen (PRU) et calcul des plus-values.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setActiveTab('POSITIONS')}
+                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-xs shrink-0"
+              >
+                <span>Voir les 3 sections pédagogiques</span>
+                <ArrowUpRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* TAB 1: POSITIONS TABLE - 3 SECTIONS EDUCATIVES & PEDAGOGIQUES */}
         {activeTab === 'POSITIONS' && (

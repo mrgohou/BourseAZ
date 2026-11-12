@@ -132,6 +132,28 @@ export function createDefaultVirtualPortfolio(userId: string = 'guest'): Virtual
 }
 
 /**
+ * Loads virtual portfolio synchronously from localStorage with fallback to default template
+ */
+export function getInitialVirtualPortfolio(userId: string = 'guest'): VirtualPortfolio {
+  if (typeof window === 'undefined') {
+    return createDefaultVirtualPortfolio(userId);
+  }
+  const storageKey = `${STORAGE_PREFIX}${userId}`;
+  try {
+    const localData = localStorage.getItem(storageKey);
+    if (localData) {
+      const parsed = JSON.parse(localData);
+      if (parsed && parsed.positions && Array.isArray(parsed.positions)) {
+        return parsed;
+      }
+    }
+  } catch (e) {
+    console.warn('Erreur lecture synchrone portfolio initial:', e);
+  }
+  return createDefaultVirtualPortfolio(userId);
+}
+
+/**
  * Loads virtual portfolio from localStorage with fallback to Firestore or default template
  */
 export async function loadVirtualPortfolio(userId: string = 'guest'): Promise<VirtualPortfolio> {
@@ -194,12 +216,21 @@ export async function saveVirtualPortfolio(portfolio: VirtualPortfolio): Promise
  * Computes all metrics and calculated positions for the portfolio using latest market prices
  */
 export function calculatePortfolioKPIs(
-  portfolio: VirtualPortfolio,
+  portfolio?: VirtualPortfolio | null,
   companies: Company[] = DEMO_COMPANIES
 ): {
   calculatedPositions: VirtualPositionCalculated[];
   kpis: PortfolioKPIs;
 } {
+  const safePortfolio: VirtualPortfolio = (portfolio && typeof portfolio === 'object' && Array.isArray(portfolio.positions))
+    ? portfolio
+    : createDefaultVirtualPortfolio('guest');
+
+  const positions = Array.isArray(safePortfolio.positions) ? safePortfolio.positions : [];
+  const transactions = Array.isArray(safePortfolio.transactions) ? safePortfolio.transactions : [];
+  const currentCash = typeof safePortfolio.currentCash === 'number' ? safePortfolio.currentCash : 0;
+  const initialCash = typeof safePortfolio.initialCash === 'number' && safePortfolio.initialCash > 0 ? safePortfolio.initialCash : 10000000;
+
   const companiesMap = new Map<string, Company>();
   companies.forEach(c => companiesMap.set(c.symbol.toUpperCase(), c));
 
@@ -208,7 +239,7 @@ export function calculatePortfolioKPIs(
   let dailyGainLoss = 0;
 
   // Calculate each position
-  const calculatedPositions: VirtualPositionCalculated[] = portfolio.positions.map(pos => {
+  const calculatedPositions: VirtualPositionCalculated[] = positions.map(pos => {
     const company = companiesMap.get(pos.symbol.toUpperCase());
     const currentPrice = company ? company.currentPrice : pos.averageBuyPrice;
     const previousClose = company ? company.previousClose : pos.averageBuyPrice;
@@ -240,7 +271,7 @@ export function calculatePortfolioKPIs(
     };
   });
 
-  const totalPortfolioValue = portfolio.currentCash + totalStockValue;
+  const totalPortfolioValue = currentCash + totalStockValue;
 
   // Second pass: compute weight
   calculatedPositions.forEach(p => {
@@ -253,7 +284,7 @@ export function calculatePortfolioKPIs(
   calculatedPositions.sort((a, b) => b.currentValue - a.currentValue);
 
   // Realized gain/loss from sell transactions
-  const realizedGainLoss = portfolio.transactions
+  const realizedGainLoss = transactions
     .filter(tx => tx.type === 'SELL')
     .reduce((sum, tx) => sum + (tx.realizedGainLoss || 0), 0);
 
@@ -262,9 +293,9 @@ export function calculatePortfolioKPIs(
     ? (unrealizedGainLoss / totalInvested) * 100
     : 0;
 
-  const totalGainLoss = totalPortfolioValue - portfolio.initialCash;
-  const totalGainLossPercent = portfolio.initialCash > 0
-    ? (totalGainLoss / portfolio.initialCash) * 100
+  const totalGainLoss = totalPortfolioValue - initialCash;
+  const totalGainLossPercent = initialCash > 0
+    ? (totalGainLoss / initialCash) * 100
     : 0;
 
   const previousPortfolioTotal = totalPortfolioValue - dailyGainLoss;
@@ -273,7 +304,7 @@ export function calculatePortfolioKPIs(
     : 0;
 
   const cashWeightPercent = totalPortfolioValue > 0
-    ? Math.round((portfolio.currentCash / totalPortfolioValue) * 1000) / 10
+    ? Math.round((currentCash / totalPortfolioValue) * 1000) / 10
     : 0;
 
   const stocksWeightPercent = totalPortfolioValue > 0
@@ -316,7 +347,7 @@ export function calculatePortfolioKPIs(
 
   const kpis: PortfolioKPIs = {
     totalValue: Math.round(totalPortfolioValue),
-    currentCash: Math.round(portfolio.currentCash),
+    currentCash: Math.round(currentCash),
     totalInvested: Math.round(totalInvested),
     unrealizedGainLoss: Math.round(unrealizedGainLoss),
     unrealizedGainLossPercent: Math.round(unrealizedGainLossPercent * 100) / 100,

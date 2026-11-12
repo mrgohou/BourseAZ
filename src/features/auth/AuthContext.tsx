@@ -158,11 +158,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const stored = localStorage.getItem(STORAGE_KEY_SIMULATIONS);
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed)) {
+          // Clear seeded/dummy simulations so client space is completely empty for real user data
+          const realSims = parsed.filter(
+            s => s && s.id !== 'sim-dca-snts-5y' && s.id !== 'sim-rendement-sgbc' && !String(s.id).startsWith('sim-seeded-')
+          );
+          return realSims;
+        }
       }
-      return SEEDED_SIMULATIONS;
+      return [];
     } catch {
-      return SEEDED_SIMULATIONS;
+      return [];
     }
   });
 

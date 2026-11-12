@@ -51,6 +51,11 @@ function AppContent() {
       '/account': 'Mon Espace Client BRVM',
       '/espace-client': 'Mon Espace Client BRVM',
       '/client': 'Mon Espace Client BRVM',
+      '/portfolio': 'Mon Portefeuille Virtuel',
+      '/portefeuille': 'Mon Portefeuille Virtuel',
+      '/simulations': 'Mes Simulations BRVM',
+      '/profil': 'Mon Profil Investisseur',
+      '/security': 'Sécurité du Compte',
       '/admin': 'Dashboard Admin & Analytics',
       '/privacy': 'Politique de Confidentialité',
       '/sgi': 'Annuaire Officiel des SGI',
@@ -91,9 +96,24 @@ function AppContent() {
       return <SimulationPage initialSymbol={symbol} onNavigate={navigate} />;
     }
 
-    if (pathOnly === '/alerts') {
-      const symbol = queryParams.get('symbol') || 'SNTS';
-      return <PriceAlertsManager defaultSymbol={symbol} onNavigate={navigate} />;
+    if (pathOnly === '/alerts' || pathOnly === '/alertes') {
+      return <AccountPage initialSection="ALERTS" onNavigate={navigate} />;
+    }
+
+    if (pathOnly === '/portfolio' || pathOnly === '/portefeuille' || pathOnly === '/portefeuille-virtuel') {
+      return <AccountPage initialSection="PORTFOLIO" onNavigate={navigate} />;
+    }
+
+    if (pathOnly === '/simulations' || pathOnly === '/mes-simulations') {
+      return <AccountPage initialSection="SIMULATIONS" onNavigate={navigate} />;
+    }
+
+    if (pathOnly === '/profil' || pathOnly === '/profile' || pathOnly === '/mon-profil') {
+      return <AccountPage initialSection="PROFILE" onNavigate={navigate} />;
+    }
+
+    if (pathOnly === '/security' || pathOnly === '/securite') {
+      return <AccountPage initialSection="SECURITY" onNavigate={navigate} />;
     }
 
     if (pathOnly === '/comparison') {
@@ -109,8 +129,11 @@ function AppContent() {
       return <AuthPage onNavigate={navigate} />;
     }
 
-    if (pathOnly.startsWith('/account') || pathOnly.startsWith('/espace-client') || pathOnly.startsWith('/client')) {
-      return <AccountPage onNavigate={navigate} />;
+    if (pathOnly.startsWith('/account') || pathOnly.startsWith('/espace-client') || pathOnly.startsWith('/client') || pathOnly === '/dashboard') {
+      const tabParam = (queryParams.get('tab') || queryParams.get('section') || '').toUpperCase();
+      const validTabs = ['DASHBOARD', 'PORTFOLIO', 'PROFILE', 'SIMULATIONS', 'ALERTS', 'SGIS', 'SECURITY', 'ALL'];
+      const initialTab = validTabs.includes(tabParam) ? (tabParam as any) : undefined;
+      return <AccountPage initialSection={initialTab} onNavigate={navigate} />;
     }
 
     if (pathOnly === '/admin') {

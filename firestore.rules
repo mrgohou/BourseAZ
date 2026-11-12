@@ -22,6 +22,17 @@ service cloud.firestore {
       allow read: if isOwner(userId) || isAdmin();
       allow create, update: if isOwner(userId) || isAdmin();
       allow delete: if isAdmin();
+
+      match /notifications/{notifId} {
+        allow read, update, delete: if isOwner(userId) || isAdmin();
+        allow create: if true;
+      }
+    }
+
+    // Mail Deliveries: audit records
+    match /mail_deliveries/{deliveryId} {
+      allow read: if isAdmin();
+      allow create: if true;
     }
 
     // Telemetry Analytics: Anyone can push events; only admins can inspect or delete analytics

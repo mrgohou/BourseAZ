@@ -158,6 +158,33 @@ export const PortfolioPerformanceChart: React.FC<PortfolioPerformanceChartProps>
 
   const brvmAlpha = latestPoint ? (latestPoint.portfolioReturnPercent - latestPoint.brvmReturnPercent).toFixed(1) : '0';
 
+  if (simulations.length === 0) {
+    return (
+      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 p-8 text-center space-y-4 shadow-xs">
+        <div className="w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto">
+          <TrendingUp className="w-7 h-7" />
+        </div>
+        <div className="space-y-1 max-w-md mx-auto">
+          <h3 className="text-base font-black text-slate-900 dark:text-white font-['Outfit']">
+            Aucune simulation enregistrée
+          </h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+            Votre espace client s'enrichira automatiquement dès que vous aurez validé votre première simulation d'investissement ou plan DCA.
+          </p>
+        </div>
+        {onNavigate && (
+          <button
+            onClick={() => onNavigate('/simulation')}
+            className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs inline-flex items-center gap-2 transition-all cursor-pointer shadow-xs"
+          >
+            <TrendingUp className="w-4 h-4" />
+            <span>Lancer ma première simulation DCA</span>
+          </button>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-sm p-5 sm:p-7 space-y-6">
       {/* Header & Controls */}
