@@ -1,0 +1,521 @@
+{
+  "reviewedAt": "2026-11-11",
+  "editor": "Bourse Facile",
+  "lessons": [
+    {
+      "id": "m1",
+      "title": "Bienvenue & Qu’est-ce qu’une Action ?",
+      "subtitle": "Découvrez les bases de la Bourse Régionale des Valeurs Mobilières (BRVM) et devenez propriétaire d’une fraction d’entreprise.",
+      "minutes": 3,
+      "category": "Comprendre",
+      "paragraphs": [
+        "Une action est une fraction du capital d’une entreprise. Elle peut donner des droits de vote et un droit aux distributions décidées par les actionnaires. Elle ne garantit ni revenu ni remboursement du capital.",
+        "La BRVM organise un marché commun aux huit pays de l’UEMOA : Bénin, Burkina Faso, Côte d’Ivoire, Guinée-Bissau, Mali, Niger, Sénégal et Togo. Les titres y sont libellés en francs CFA (XOF).",
+        "Une émission d’actions peut financer l’entreprise. Sur le marché secondaire, les investisseurs échangent des titres déjà émis. Le prix dépend des ordres qui se rencontrent."
+      ],
+      "takeaway": "Acheter une action Sonatel ou Solibra à la BRVM, c’est acheter un morceau direct de cette entreprise.",
+      "question": "Que possédez-vous exactement lorsque vous achetez une action en Bourse ?",
+      "answers": [
+        "Un prêt d’argent remboursable obligatoirement par la banque",
+        "Une part de propriété (fraction du capital) de l’entreprise",
+        "Une promesse de gain garanti de 20% par an"
+      ],
+      "correct": 1,
+      "explanation": "Bravo ! Une action représente une part directe du capital de la société émettrice.",
+      "source": "https://www.brvm.org/fr"
+    },
+    {
+      "id": "m2",
+      "title": "Pourquoi le prix d’une action change-t-il ?",
+      "subtitle": "Comprenez la loi de l’offre et de la demande et les facteurs qui influencent les cours quotidiennement.",
+      "minutes": 4,
+      "category": "Comprendre",
+      "paragraphs": [
+        "Le cours résulte de la confrontation des ordres d’achat et de vente selon les règles du marché. La quantité disponible, les prix proposés et la liquidité influencent l’exécution.",
+        "Les résultats financiers, les perspectives, les annonces de dividendes et les conditions économiques peuvent modifier les attentes des investisseurs. Une bonne publication ne garantit pas une hausse : elle peut déjà être anticipée dans le cours.",
+        "Un dernier cours ne garantit pas le prix auquel un nouvel ordre sera exécuté. Vérifie la date de séance et distingue ouverture, clôture et cours précédent."
+      ],
+      "takeaway": "Le cours dépend des prix et quantités des ordres qui se rencontrent sur le marché.",
+      "question": "Une bonne publication financière garantit-elle une hausse du cours ?",
+      "answers": [
+        "Oui, toujours",
+        "Non : le prix dépend aussi des attentes et des ordres",
+        "Uniquement pour les banques"
+      ],
+      "correct": 1,
+      "explanation": "Une annonce peut déjà être anticipée. La liquidité et les ordres comptent aussi.",
+      "source": "https://www.brvm.org/fr"
+    },
+    {
+      "id": "m3",
+      "title": "Comment gagne-t-on de l’argent en Bourse ?",
+      "subtitle": "Découvrez les 2 moteurs de gain : la plus-value (gain en capital) et le dividende.",
+      "minutes": 4,
+      "category": "Comprendre",
+      "paragraphs": [
+        "Le résultat d’un investissement combine la variation de valeur des titres et les distributions reçues, après frais et fiscalité applicable. Une baisse du cours peut dépasser les dividendes encaissés.",
+        "Une plus-value est réalisée lors d’une vente au-dessus du prix de revient. Avant la vente, la variation est latente. Une moins-value apparaît lorsque le prix de cession est inférieur au prix de revient.",
+        "Le dividende dépend d’une décision de distribution et des conditions du versement. Il n’est ni un salaire ni un paiement garanti chaque année."
+      ],
+      "takeaway": "Résultat total = variation de valeur + distributions reçues − frais et impôts applicables.",
+      "question": "Si vous conservez une action sans la revendre, quel type de revenu direct pouvez-vous recevoir ?",
+      "answers": [
+        "Un salaire mensuel",
+        "Un dividende versé par la société",
+        "Un remboursement d’impôts"
+      ],
+      "correct": 1,
+      "explanation": "Très bien ! Les dividendes sont versés aux actionnaires conservant leurs titres à la date d’arrêté.",
+      "source": "https://www.brvm.org/fr"
+    },
+    {
+      "id": "m4",
+      "title": "Qu’est-ce qu’un Dividende & Rendement ?",
+      "subtitle": "Apprenez à calculer le rendement d’un dividende et à comprendre le calendrier de versement.",
+      "minutes": 5,
+      "category": "Comprendre",
+      "paragraphs": [
+        "L’assemblée générale décide de l’affectation du résultat. Une distribution peut être votée, réduite ou supprimée. Consulte l’avis officiel pour le montant, le détachement et le paiement.",
+        "Le rendement historique du dividende rapporte un dividende passé au cours retenu. Ce ratio n’est pas une promesse de rendement futur. Les frais, la fiscalité et l’évolution du cours influencent le résultat effectivement obtenu.",
+        "Le montant net et la date du dernier paiement figurant au bulletin ne constituent pas un calendrier de futurs versements. Le traitement fiscal dépend du pays, du statut et de la réglementation applicable."
+      ],
+      "takeaway": "Rendement du Dividende (%) = (Dividende annuel / Prix de l’action) × 100.",
+      "question": "Comment calcule-t-on le rendement du dividende d’une action ?",
+      "answers": [
+        "(Dividende / Prix de l’action) × 100",
+        "Prix de l’action + Nombre d’employés",
+        "Bénéfice net / Chiffre d’affaires"
+      ],
+      "correct": 0,
+      "explanation": "Exact ! C’est le ratio entre le dividende annuel reçu et le prix de l’action.",
+      "source": "https://www.brvm.org/fr"
+    },
+    {
+      "id": "m5",
+      "title": "Qu’est-ce que le BPA (Bénéfice Par Action) ?",
+      "subtitle": "Comprenez l’indicateur roi de la rentabilité réelle des entreprises.",
+      "minutes": 5,
+      "category": "Comprendre",
+      "paragraphs": [
+        "Le bénéfice par action (BPA) rapporte un résultat attribuable aux actionnaires au nombre d’actions retenu dans les états financiers. Consulte le rapport pour le périmètre et les éventuelles variations du nombre de titres.",
+        "Le chiffre d’affaires mesure des revenus d’activité ; le bénéfice est un résultat après charges. Pour une banque, le produit net bancaire et les indicateurs prudentiels sont plus adaptés à l’analyse qu’une simple comparaison de ventes industrielles.",
+        "Compare des périodes et périmètres identiques. Un fractionnement, une émission ou un élément exceptionnel peut rendre trompeuse une comparaison brute du BPA."
+      ],
+      "takeaway": "BPA (FCFA) = Bénéfice Net Total / Nombre Total d’Actions.",
+      "question": "Que signifie un BPA (Bénéfice Par Action) négatif ?",
+      "answers": [
+        "L’entreprise a distribué trop de cadeaux",
+        "L’entreprise a enregistré une perte nette sur l’exercice financier",
+        "L’action est devenue totalement gratuite"
+      ],
+      "correct": 1,
+      "explanation": "Absolument ! Un BPA négatif signifie que l’exercice comptable s’est soldé par une perte nette.",
+      "source": "https://www.brvm.org/fr"
+    },
+    {
+      "id": "m6",
+      "title": "Qu’est-ce que le PER (Price Earning Ratio) ?",
+      "subtitle": "Maitrisez le multiple de valorisation indispensable pour savoir si une action est chère ou bon marché.",
+      "minutes": 6,
+      "category": "Comprendre",
+      "paragraphs": [
+        "Le PER rapporte le cours au bénéfice par action. Un multiple bas peut refléter une valorisation faible, un résultat exceptionnel ou des risques élevés. Il ne suffit pas à décider d’un investissement.",
+        "Compare des sociétés de secteurs proches et vérifie l’exercice du bénéfice utilisé. Le PER publié au bulletin est reproduit comme tel, sans inventer un BPA à partir d’un résultat non vérifié.",
+        "Si le BPA est nul, le ratio n’est pas défini ; s’il est négatif, le PER n’a pas l’interprétation habituelle de multiple de bénéfice positif. L’absence de ratio n’est jamais remplacée par zéro."
+      ],
+      "takeaway": "PER = Cours de l’action / BPA. Il est calculé uniquement si le BPA est positif.",
+      "question": "Si le BPA d’une société est négatif (perte comptable), que devient le PER ?",
+      "answers": [
+        "Le PER prend automatiquement la valeur 0",
+        "Le PER ne peut pas être calculé (non disponible)",
+        "Le PER est égal au chiffre d’affaires"
+      ],
+      "correct": 1,
+      "explanation": "Exactement ! Le PER est indéfini pour les résultats négatifs car diviser par un chiffre négatif déformerait le ratio.",
+      "source": "https://www.brvm.org/fr"
+    },
+    {
+      "id": "m7",
+      "title": "Lire la croissance d’une entreprise",
+      "subtitle": "Même période, même périmètre, même unité.",
+      "minutes": 5,
+      "category": "Analyser",
+      "paragraphs": [
+        "Compare le chiffre d’affaires ou le produit net bancaire, le résultat, les flux de trésorerie et l’endettement. Une hausse du cours n’est pas une hausse du chiffre d’affaires.",
+        "La variation d’un indicateur se calcule entre périodes comparables : (valeur nouvelle / valeur ancienne − 1) × 100, lorsque la base est positive et significative. Un passage d’une perte à un bénéfice demande une lecture en montants, pas une simple interprétation du pourcentage.",
+        "Lis les notes sur les changements de périmètre, les effets de change, les retraitements et les éléments exceptionnels. Des comptes semestriels ne sont pas directement comparables à des comptes annuels."
+      ],
+      "takeaway": "Même période, même périmètre, même unité.",
+      "question": "Quelle comparaison est cohérente ?",
+      "answers": [
+        "Premier semestre contre premier semestre comparable",
+        "Un trimestre contre une année entière",
+        "Deux chiffres sans unité"
+      ],
+      "correct": 0,
+      "explanation": "La durée, le périmètre et les unités doivent être comparables.",
+      "source": "https://www.brvm.org/fr/rapports-societes-cotees"
+    },
+    {
+      "id": "m8",
+      "title": "Diversifier et comprendre le risque",
+      "subtitle": "Diversifier réduit certaines concentrations, sans garantir le capital.",
+      "minutes": 5,
+      "category": "Analyser",
+      "paragraphs": [
+        "Une action expose à une perte partielle ou totale du capital. La liquidité peut limiter la possibilité de vendre rapidement au prix souhaité.",
+        "Diversifier par émetteur, secteur et type d’actif réduit certaines concentrations. Cela ne supprime ni le risque de marché ni le risque de perte.",
+        "Préserve une épargne de précaution adaptée à tes besoins. Un horizon long ne garantit pas un rendement positif. Évite de financer un investissement risqué avec un argent nécessaire à court terme."
+      ],
+      "takeaway": "Diversifier réduit certaines concentrations, sans garantir le capital.",
+      "question": "La diversification supprime-t-elle tout risque ?",
+      "answers": [
+        "Oui",
+        "Non",
+        "Seulement si toutes les actions sont du même secteur"
+      ],
+      "correct": 1,
+      "explanation": "Les titres peuvent baisser ensemble et rester difficiles à vendre.",
+      "source": "https://www.brvm.org/fr"
+    },
+    {
+      "id": "m9",
+      "title": "Versements réguliers et capitalisation",
+      "subtitle": "Une projection est une hypothèse, jamais une promesse.",
+      "minutes": 5,
+      "category": "Simuler",
+      "paragraphs": [
+        "Les versements réguliers répartissent les dates d’investissement. Ils ne garantissent pas un meilleur prix moyen ni un gain.",
+        "La capitalisation suppose que les gains soient réinvestis. Dans une simulation, un taux constant est une hypothèse mathématique, pas une prévision sur la BRVM.",
+        "Teste un scénario de baisse et ajoute les frais. Distingue le total versé de la valeur finale et vérifie les limites du modèle : volatilité, fiscalité et calendrier réel."
+      ],
+      "takeaway": "Une projection est une hypothèse, jamais une promesse.",
+      "question": "Un rendement constant dans le simulateur signifie…",
+      "answers": [
+        "Une garantie de la BRVM",
+        "Une hypothèse choisie pour le calcul",
+        "Un dividende voté"
+      ],
+      "correct": 1,
+      "explanation": "Le simulateur ne prévoit pas les résultats futurs.",
+      "source": "https://www.brvm.org/fr"
+    },
+    {
+      "id": "m10",
+      "title": "Frais et rendement net",
+      "subtitle": "Utilise le barème de ta SGI et la fiscalité de ta situation.",
+      "minutes": 5,
+      "category": "Simuler",
+      "paragraphs": [
+        "Les frais peuvent comprendre courtage, conservation, minimums et taxes. Les barèmes et leur assiette varient selon la SGI et le contrat.",
+        "Demande le barème écrit et sa date d’effet. N’applique pas automatiquement à tous les investisseurs un taux trouvé dans un exemple.",
+        "Un rendement brut peut devenir un résultat net faible ou négatif après frais et impôts. Les simulations de l’application distinguent les hypothèses saisies des données du marché."
+      ],
+      "takeaway": "Utilise le barème de ta SGI et la fiscalité de ta situation.",
+      "question": "Où vérifier les frais applicables ?",
+      "answers": [
+        "Dans une moyenne inventée",
+        "Dans le barème contractuel daté de la SGI",
+        "Dans le cours de clôture"
+      ],
+      "correct": 1,
+      "explanation": "Les frais doivent provenir du contrat et des règles applicables.",
+      "source": "https://www.brvm.org/fr"
+    },
+    {
+      "id": "g1",
+      "title": "1. Découvrir la BRVM",
+      "subtitle": "Commence par identifier la source et la date.",
+      "minutes": 5,
+      "category": "Premier investissement",
+      "paragraphs": [
+        "La BRVM est le marché régional commun aux huit pays de l’UEMOA. Un indice représente un panier selon une méthodologie, et non un compte d’épargne.",
+        "Repère la séance de cotation, la source et les unités. Les cours affichés dans cette application proviennent du site officiel ou du bulletin, sans promesse de cotation en temps réel."
+      ],
+      "takeaway": "Commence par identifier la source et la date.",
+      "question": "Que faut-il vérifier avant de comparer deux cours ?",
+      "answers": [
+        "Leur couleur",
+        "Leur date et leur nature",
+        "Le nombre de téléchargements"
+      ],
+      "correct": 1,
+      "explanation": "Un cours ancien ou un cours d’ouverture ne se compare pas sans contexte à une clôture.",
+      "source": "https://www.brvm.org/fr"
+    },
+    {
+      "id": "g2",
+      "title": "2. Choisir sa SGI et ouvrir un compte",
+      "subtitle": "Vérifie l’agrément et les coordonnées de l’intermédiaire.",
+      "minutes": 5,
+      "category": "Premier investissement",
+      "paragraphs": [
+        "Vérifie l’intermédiaire auprès de la BRVM et de l’AMF-UMOA, puis contacte-le par ses coordonnées officielles. Méfie-toi des demandes de transfert vers un compte personnel.",
+        "Compare les conditions d’ouverture, frais, conservation, accès aux relevés et canaux de transmission des ordres. Les exigences d’identité et de résidence dépendent du contrat et de la réglementation.",
+        "Bourse Facile ne collecte pas de pièce d’identité et ne reçoit aucun fonds. L’ouverture du compte et les opérations se font auprès de l’établissement agréé."
+      ],
+      "takeaway": "Vérifie l’agrément et les coordonnées de l’intermédiaire.",
+      "question": "À qui confier l’ouverture du compte-titres ?",
+      "answers": [
+        "À un inconnu qui garantit un rendement",
+        "À un intermédiaire agréé vérifié",
+        "À une adresse reçue sans vérification"
+      ],
+      "correct": 1,
+      "explanation": "Vérifie l’établissement auprès des sources officielles.",
+      "source": "https://www.brvm.org/fr/intervenants/sgi/tous"
+    },
+    {
+      "id": "g3",
+      "title": "3. Comprendre un ordre de bourse",
+      "subtitle": "Un ordre transmis n’est pas nécessairement exécuté.",
+      "minutes": 5,
+      "category": "Premier investissement",
+      "paragraphs": [
+        "Un ordre précise notamment le titre, le sens, la quantité, le prix ou type d’ordre autorisé et la durée de validité. Demande à la SGI les types d’ordre effectivement disponibles.",
+        "Un ordre à cours limité fixe une limite de prix : il peut ne pas être exécuté ou ne l’être que partiellement. Les frais et le décalage entre la cotation consultée et l’exécution restent à prendre en compte.",
+        "Après exécution, vérifie l’avis d’opéré : titre, quantité, prix, frais et règlement-livraison. Ne confonds pas saisie d’ordre et exécution."
+      ],
+      "takeaway": "Un ordre transmis n’est pas nécessairement exécuté.",
+      "question": "Un ordre à cours limité garantit…",
+      "answers": [
+        "L’exécution immédiate",
+        "Une limite de prix, pas l’exécution",
+        "Une plus-value"
+      ],
+      "correct": 1,
+      "explanation": "La liquidité disponible et les ordres opposés déterminent l’exécution.",
+      "source": "https://www.brvm.org/fr"
+    },
+    {
+      "id": "g4",
+      "title": "4. Suivre ses titres et dividendes",
+      "subtitle": "Contrôle les opérations sur titres et les relevés.",
+      "minutes": 5,
+      "category": "Premier investissement",
+      "paragraphs": [
+        "Utilise les avis officiels pour les distributions et opérations sur titres. Une date de paiement passée ne constitue pas une nouvelle annonce.",
+        "Un fractionnement augmente le nombre de titres et réduit mécaniquement le prix unitaire, à valeur totale théorique inchangée avant effets de marché. Ajuste les comparaisons historiques.",
+        "Rapproche les relevés de la SGI, les dividendes reçus et les frais. Le portefeuille local de l’application est un outil de suivi saisi par toi, sans connexion à ton compte réel."
+      ],
+      "takeaway": "Contrôle les opérations sur titres et les relevés.",
+      "question": "Un fractionnement crée-t-il à lui seul une richesse nouvelle ?",
+      "answers": [
+        "Oui",
+        "Non",
+        "Seulement le jour du paiement"
+      ],
+      "correct": 1,
+      "explanation": "Il modifie les unités de détention, pas la valeur économique totale théorique.",
+      "source": "https://www.brvm.org/fr"
+    },
+    {
+      "id": "g5",
+      "title": "5. Construire et réviser son plan",
+      "subtitle": "Un plan doit intégrer la possibilité d’une perte.",
+      "minutes": 5,
+      "category": "Premier investissement",
+      "paragraphs": [
+        "Définis ton objectif, l’horizon, les besoins de liquidité et la perte que tu peux supporter. Un questionnaire éducatif ne remplace pas une analyse personnelle ni un conseil professionnel.",
+        "Compare les scénarios de versements et de rendement, y compris négatifs. Identifie les hypothèses de frais et les informations manquantes.",
+        "Relis les publications financières périodiquement. Une variation quotidienne ne suffit pas à juger la croissance ou la solidité d’une entreprise."
+      ],
+      "takeaway": "Un plan doit intégrer la possibilité d’une perte.",
+      "question": "Le profil éducatif fournit-il une garantie de rendement ?",
+      "answers": [
+        "Oui",
+        "Non",
+        "Uniquement après un quiz"
+      ],
+      "correct": 1,
+      "explanation": "Il sert à réfléchir aux contraintes et au risque, sans recommandation personnalisée.",
+      "source": "https://www.brvm.org/fr"
+    }
+  ],
+  "glossary": [
+    {
+      "id": "brvm",
+      "term": "BRVM (Bourse Régionale des Valeurs Mobilières)",
+      "category": "Marché & Bourse",
+      "definition": "Le marché officiel unique où s’achètent et se vendent les actions et obligations des 8 pays de l’Afrique de l’Ouest (UEMOA) en Francs CFA.",
+      "formula": null,
+      "source": "https://www.brvm.org/fr"
+    },
+    {
+      "id": "sgi",
+      "term": "SGI (Société de Gestion et d’Intermédiation)",
+      "category": "Intermédiaires Agréés",
+      "definition": "Un intermédiaire agréé qui reçoit et exécute des ordres selon son agrément et son contrat. Vérifie son statut et ses coordonnées officielles.",
+      "formula": null,
+      "source": "https://www.brvm.org/fr"
+    },
+    {
+      "id": "dividende",
+      "term": "Dividende",
+      "category": "Revenus & Rendement",
+      "definition": "Une distribution décidée au bénéfice des actionnaires. Son versement et son montant ne sont pas garantis chaque année.",
+      "formula": null,
+      "source": "https://www.brvm.org/fr"
+    },
+    {
+      "id": "rendement-dividende",
+      "term": "Rendement du Dividende (Dividend Yield)",
+      "category": "Ratios & Rentabilité",
+      "definition": "Le rapport entre un dividende de référence et le prix de l’action. Il décrit une base historique et non un revenu futur garanti.",
+      "formula": "Rendement (%) = (Dividende annuel par action / Prix de l’action) × 100",
+      "source": "https://www.brvm.org/fr"
+    },
+    {
+      "id": "per",
+      "term": "PER (Price Earnings Ratio)",
+      "category": "Valorisation & Prix",
+      "definition": "Le cours divisé par le bénéfice par action positif. Il doit être interprété selon le secteur, l’exercice et les risques.",
+      "formula": "PER = Prix actuel de l’action / Bénéfice Par Action (BPA)",
+      "source": "https://www.brvm.org/fr"
+    },
+    {
+      "id": "bpa",
+      "term": "BPA (Bénéfice Par Action)",
+      "category": "Performance Financière",
+      "definition": "Le résultat attribuable aux actionnaires rapporté au nombre d’actions retenu dans les comptes.",
+      "formula": "BPA = Bénéfice Net Total / Nombre Total d’Actions",
+      "source": "https://www.brvm.org/fr"
+    },
+    {
+      "id": "compte-titres",
+      "term": "Compte-Titres",
+      "category": "Compte & Démarrage",
+      "definition": "Un compte qui enregistre les instruments financiers détenus, associé selon le contrat à un compte espèces.",
+      "formula": null,
+      "source": "https://www.brvm.org/fr"
+    },
+    {
+      "id": "irvm",
+      "term": "IRVM (Impôt sur le Revenu des Valeurs Mobilières)",
+      "category": "Fiscalité UEMOA",
+      "definition": "Un impôt sur les revenus de valeurs mobilières. Le taux et les exonérations dépendent de la législation applicable et de la situation fiscale.",
+      "formula": null,
+      "source": "https://www.brvm.org/fr"
+    },
+    {
+      "id": "amf-umoa",
+      "term": "AMF-UMOA (Autorité des Marchés Financiers de l’UMOA)",
+      "category": "Régulation & Sécurité",
+      "definition": "L’organisme public officiel (\"gendarme financier\") qui surveille la BRVM, protège les épargnants et valide les sociétés autorisées.",
+      "formula": null,
+      "source": "https://www.brvm.org/fr"
+    },
+    {
+      "id": "dcbr",
+      "term": "DC/BR (Dépositaire Central / Banque de Règlement)",
+      "category": "Sécurité & Transactions",
+      "definition": "Le Dépositaire Central / Banque de Règlement organise la conservation centralisée et le règlement-livraison selon les règles du marché.",
+      "formula": null,
+      "source": "https://www.brvm.org/fr"
+    },
+    {
+      "id": "interets-composes",
+      "term": "Intérêts Composés (Effet Boule de Neige)",
+      "category": "Stratégie & Croissance",
+      "definition": "La capitalisation des gains réinvestis : ils peuvent produire à leur tour des gains, mais ceux-ci ne sont pas garantis.",
+      "formula": null,
+      "source": "https://www.brvm.org/fr"
+    },
+    {
+      "id": "dca",
+      "term": "DCA (Investissement Régulier Programmé)",
+      "category": "Stratégie d’Épargne",
+      "definition": "Des investissements répartis régulièrement dans le temps. Cette méthode n’empêche pas une perte et ne garantit pas un meilleur prix.",
+      "formula": null,
+      "source": "https://www.brvm.org/fr"
+    },
+    {
+      "id": "obligation",
+      "term": "Obligation (Titre de Dette)",
+      "category": "Instruments Sécurisés",
+      "definition": "Un titre de dette : l’émetteur s’engage selon les conditions du contrat. Il existe des risques de défaut, de taux et de liquidité.",
+      "formula": null,
+      "source": "https://www.brvm.org/fr"
+    },
+    {
+      "id": "plus-value",
+      "term": "Plus-Value (Gain en Capital)",
+      "category": "Gains & Performance",
+      "definition": "Le gain réalisé quand vous revendez une action à un prix supérieur à son prix d’achat initial.",
+      "formula": null,
+      "source": "https://www.brvm.org/fr"
+    },
+    {
+      "id": "capitalisation-boursiere",
+      "term": "Capitalisation Boursière",
+      "category": "Taille d’Entreprise",
+      "definition": "La valeur marchande totale de l’ensemble d’une entreprise calculée à partir du prix de ses actions en bourse.",
+      "formula": "Capitalisation = Prix de l’action × Nombre total d’actions en circulation",
+      "source": "https://www.brvm.org/fr"
+    },
+    {
+      "id": "flottant",
+      "term": "Flottant (Free Float)",
+      "category": "Échangeabilité",
+      "definition": "La proportion d’actions d’une entreprise réellement disponible à l’achat pour le grand public sur le marché.",
+      "formula": null,
+      "source": "https://www.brvm.org/fr"
+    },
+    {
+      "id": "carnet-ordres",
+      "term": "Carnet d’Ordres",
+      "category": "Marché en Direct",
+      "definition": "La liste en temps réel de tous les acheteurs et vendeurs avec les prix et quantités qu’ils proposent.",
+      "formula": null,
+      "source": "https://www.brvm.org/fr"
+    },
+    {
+      "id": "ordre-de-bourse",
+      "term": "Ordre de Bourse",
+      "category": "Passage d’Ordre",
+      "definition": "L’instruction que vous donnez à votre SGI pour acheter ou vendre un nombre précis d’actions à un prix donné.",
+      "formula": null,
+      "source": "https://www.brvm.org/fr"
+    },
+    {
+      "id": "split",
+      "term": "Split (Fractionnement d’Actions)",
+      "category": "Opérations sur Titres",
+      "definition": "Un fractionnement augmente le nombre d’actions et réduit proportionnellement le prix unitaire théorique, sans créer à lui seul de valeur.",
+      "formula": null,
+      "source": "https://www.brvm.org/fr"
+    },
+    {
+      "id": "indices-brvm",
+      "term": "Indices BRVM Composite & BRVM 30",
+      "category": "Baromètre Général",
+      "definition": "Le \"thermomètre\" qui mesure si la bourse de l’Afrique de l’Ouest est globalement en hausse ou en baisse dans la journée.",
+      "formula": null,
+      "source": "https://www.brvm.org/fr"
+    },
+    {
+      "id": "sukuk",
+      "term": "Sukuk (Obligation Islamique)",
+      "category": "Finance Participative",
+      "definition": "Un titre d’investissement conforme aux règles de la finance islamique (sans intérêt usurain), adossé à un actif réel.",
+      "formula": null,
+      "source": "https://www.brvm.org/fr"
+    },
+    {
+      "id": "pbr",
+      "term": "PBR (Price-to-Book Ratio / Valeur Comptable)",
+      "category": "Valeur d’Actif",
+      "definition": "Le rapport entre le cours et la valeur comptable des capitaux propres par action ; cette valeur comptable ne garantit pas un prix de vente.",
+      "formula": "PBR = Prix de l’action / Actif net comptable par action",
+      "source": "https://www.brvm.org/fr"
+    },
+    {
+      "id": "roe",
+      "term": "ROE (Return on Equity / Rentabilité des Capitaux)",
+      "category": "Efficacité de Gestion",
+      "definition": "Le résultat net rapporté aux capitaux propres, pour une période et un périmètre cohérents.",
+      "formula": "ROE (%) = (Bénéfice Net / Capitaux Propres) × 100",
+      "source": "https://www.brvm.org/fr"
+    }
+  ]
+}

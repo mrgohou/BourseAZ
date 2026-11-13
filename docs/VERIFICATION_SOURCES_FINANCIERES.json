@@ -1,0 +1,27 @@
+{
+  "verifiedAt": "2026-11-12",
+  "annualCoverage": [
+    "SNTS"
+  ],
+  "sourceDocuments": [
+    {
+      "url": "https://www.brvm.org/sites/default/files/20260216_-_etats_financiers_2025_et_attestation_des_cac_-_sonatel_sn.pdf",
+      "sha256": "7adcc2719664c8a1c2294e991fb568b1f23b9fffe0ca7afdb98496cf863306ca",
+      "bytes": 1385999
+    },
+    {
+      "url": "https://www.brvm.org/sites/default/files/20261012_-_avis_ndeg304_brvmdg_-_fractionnement_de_laction_sonatel_sn.pdf",
+      "sha256": "10ba58587976b4feb08bc5ac62470a77cc9faa97dce5b0c73a17c9837880d5e4",
+      "bytes": 317328
+    }
+  ],
+  "bpaPublished": 3420,
+  "bpaSplitAdjusted": 342,
+  "roeCalculated": 30.93201366583117,
+  "annualObservationAutomaticallyRefreshed": false,
+  "reviewedOfficialSplitNotice": 304,
+  "splitEffective": "2026-10-26",
+  "originalShares": 100000000,
+  "postSplitShares": 1000000000,
+  "dividendNoticeNet1740Page": 3
+}

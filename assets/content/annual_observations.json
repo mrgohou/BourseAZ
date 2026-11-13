@@ -1,0 +1,19 @@
+{
+  "SNTS": {
+    "year": 2025,
+    "basis": "Comptes consolidés IFRS, part des propriétaires de la société mère",
+    "eps": 3420,
+    "parentProfitMillions": 341963,
+    "parentEquityMillions": 1160715,
+    "priorParentEquityMillions": 1050347,
+    "originalShares": 100000000,
+    "splitFactor": 10,
+    "splitEffective": "2026-10-26T00:00:00Z",
+    "source": "https://www.brvm.org/sites/default/files/20260216_-_etats_financiers_2025_et_attestation_des_cac_-_sonatel_sn.pdf",
+    "sourcePages": [20, 23],
+    "sourceSha256": "7adcc2719664c8a1c2294e991fb568b1f23b9fffe0ca7afdb98496cf863306ca",
+    "actionSource": "https://www.brvm.org/sites/default/files/20261012_-_avis_ndeg304_brvmdg_-_fractionnement_de_laction_sonatel_sn.pdf",
+    "actionSourceSha256": "10ba58587976b4feb08bc5ac62470a77cc9faa97dce5b0c73a17c9837880d5e4",
+    "reviewedAt": "2026-11-12"
+  }
+}

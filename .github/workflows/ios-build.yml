@@ -1,0 +1,58 @@
+name: Bourse Facile iOS
+on:
+  push:
+    branches: ['builds/ios-v0.0.5']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: bourse-facile-ios-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: macos-latest
+    timeout-minutes: 55
+    env:
+      GOOGLE_IOS_CLIENT_ID: ${{ vars.GOOGLE_IOS_CLIENT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Flutter SDK 3.47.9
+        uses: actions/checkout@v4
+        with:
+          repository: flutter/flutter
+          ref: c197ca5199e9ee5661e865596c9c07294dfab51c
+          path: .flutter-sdk
+          persist-credentials: false
+      - name: Configure Flutter
+        run: |
+          echo "$GITHUB_WORKSPACE/.flutter-sdk/bin" >> "$GITHUB_PATH"
+          .flutter-sdk/bin/flutter config --no-analytics
+          .flutter-sdk/bin/flutter --version
+          xcodebuild -version
+      - name: Resolve dependencies
+        run: flutter pub get --enforce-lockfile
+      - name: Configure iOS OAuth
+        run: python3 tool/configure_ios.py
+      - name: Check code and tests
+        run: |
+          flutter analyze lib test
+          flutter test
+          python3 -m unittest discover -s tool -p test_configure_ios.py
+      - name: Build device application without Apple signature
+        run: flutter build ios --release --no-codesign --dart-define="GOOGLE_IOS_CLIENT_ID=$GOOGLE_IOS_CLIENT_ID"
+      - name: Package device application
+        run: |
+          mkdir -p dist
+          ditto -c -k --sequesterRsrc --keepParent build/ios/iphoneos/Runner.app dist/BourseFacile-iOS-v0.0.5-UNSIGNED.app.zip
+          cp docs/IOS_DISTRIBUTION.md dist/README.md
+      - name: Build simulator application
+        run: flutter build ios --simulator --debug --no-codesign --dart-define="GOOGLE_IOS_CLIENT_ID=$GOOGLE_IOS_CLIENT_ID"
+      - name: Package simulator application
+        run: ditto -c -k --sequesterRsrc --keepParent build/ios/iphonesimulator/Runner.app dist/BourseFacile-iOS-v0.0.5-SIMULATOR.app.zip
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: BourseFacile-iOS-v0.0.5
+          path: dist/
+          if-no-files-found: error
+          retention-days: 14

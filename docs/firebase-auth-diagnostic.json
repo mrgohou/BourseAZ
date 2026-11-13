@@ -1,0 +1,24 @@
+{
+  "checked_at": "2026-11-11T19:18:19.994236+00:00",
+  "project_id": "third-storm-9w532",
+  "project_number": "633926810372",
+  "checks": [
+    {
+      "operation": "signUp",
+      "http_status": 400,
+      "error": "INVALID_EMAIL"
+    },
+    {
+      "operation": "signInWithPassword",
+      "http_status": 400,
+      "error": "INVALID_EMAIL"
+    },
+    {
+      "operation": "createAuthUri",
+      "http_status": 200,
+      "provider": "google.com",
+      "google_authorization_host": "accounts.google.com",
+      "web_client_matches": true
+    }
+  ]
+}
