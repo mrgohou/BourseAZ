@@ -25,6 +25,8 @@ jobs:
           persist-credentials: false
       - name: Configure Flutter
         run: |
+          git -C .flutter-sdk fetch --depth=1 origin refs/tags/3.47.9:refs/tags/3.47.9
+          test "$(git -C .flutter-sdk rev-parse '3.47.9^{commit}')" = "c197ca5199e9ee5661e865596c9c07294dfab51c"
           echo "$GITHUB_WORKSPACE/.flutter-sdk/bin" >> "$GITHUB_PATH"
           .flutter-sdk/bin/flutter config --no-analytics
           .flutter-sdk/bin/flutter --version
@@ -50,7 +52,7 @@ jobs:
       - name: Package simulator application
         run: ditto -c -k --sequesterRsrc --keepParent build/ios/iphonesimulator/Runner.app dist/BourseFacile-iOS-v0.0.5-SIMULATOR.app.zip
       - uses: actions/upload-artifact@v4
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && hashFiles('dist/**') != '' }}
         with:
           name: BourseFacile-iOS-v0.0.5
           path: dist/
