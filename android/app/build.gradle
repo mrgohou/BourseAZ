@@ -1,0 +1,62 @@
+import java.util.Properties
+
+plugins {
+    id 'com.android.application'
+    id 'dev.flutter.flutter-gradle-plugin'
+}
+
+// Kotlin DSL library modules use this SDK integer without loading FlutterExtension.
+rootProject.ext.bourseCompileSdkVersion = flutter.compileSdkVersion
+
+final uploadPropertiesFile = rootProject.file('key.properties')
+final uploadProperties = new Properties()
+if (uploadPropertiesFile.exists()) {
+    uploadPropertiesFile.withInputStream { uploadProperties.load(it) }
+}
+
+android {
+    namespace = 'ci.boursefacile.bourse_facile_mobile'
+    compileSdk = flutter.compileSdkVersion
+    ndkVersion = flutter.ndkVersion
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+    defaultConfig {
+        applicationId = 'ci.boursefacile.bourse_facile_mobile'
+        minSdk = flutter.minSdkVersion
+        targetSdk = flutter.targetSdkVersion
+        versionCode = flutter.versionCode
+        versionName = flutter.versionName
+    }
+    signingConfigs {
+        if (uploadPropertiesFile.exists()) {
+            release {
+                keyAlias = uploadProperties['keyAlias']
+                keyPassword = uploadProperties['keyPassword']
+                storeFile = file(uploadProperties['storeFile'])
+                storePassword = uploadProperties['storePassword']
+            }
+        }
+    }
+    buildTypes {
+        release {
+            // Production signing is always explicit; no debug fallback.
+            if (uploadPropertiesFile.exists()) {
+                signingConfig = signingConfigs.release
+            }
+        }
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
+    }
+}
+
+flutter { source = '../..' }
+
+dependencies {
+    implementation 'com.tom-roush:pdfbox-android:2.0.27.0'
+}

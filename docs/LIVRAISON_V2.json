@@ -1,0 +1,23 @@
+{
+  "version": "2.0.0",
+  "versionCode": 2002,
+  "builtAt": "2026-11-11",
+  "androidAbi": "arm64-v8a",
+  "files": {
+    "BourseFacile-v2.apk": {
+      "bytes": 50466173,
+      "sha256": "549e802caf100bdf71e64971eb53a5b675ef7d7637317acb58f0e14febfcf524"
+    },
+    "BourseFacile-v2-APK.zip": {
+      "bytes": 25458695,
+      "sha256": "8318172069996da3f2cbbec100093e6195cf262cd31a79967caa1b3aa00cb36f"
+    }
+  },
+  "flutterAnalyze": "No issues found",
+  "tests": 19,
+  "liveOfficialProbe": true,
+  "demoQuotesIncluded": false,
+  "iosCompiled": false,
+  "physicalAndroidTested": false,
+  "deliveryFormat": "ZIP containing the signed APK"
+}

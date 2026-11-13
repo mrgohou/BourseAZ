@@ -1,0 +1,49 @@
+name: bourse_facile_mobile
+description: Apprendre la BRVM et simuler son épargne, sur Android et iOS.
+publish_to: none
+version: 0.0.5+8
+environment:
+  sdk: '>=3.10.0 <4.0.0'
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  http: ^1.6.0
+  shared_preferences: ^2.5.4
+  intl: ^0.20.2
+  cupertino_icons: ^1.0.8
+  html: ^0.15.7
+  url_launcher: ^6.3.3
+  google_sign_in: ^7.2.0
+  flutter_secure_storage: ^11.2.0
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+flutter:
+  uses-material-design: true
+  fonts:
+    - family: Manrope
+      fonts:
+        - asset: assets/fonts/Manrope.ttf
+          weight: 400
+        - asset: assets/fonts/Manrope.ttf
+          weight: 600
+        - asset: assets/fonts/Manrope.ttf
+          weight: 700
+        - asset: assets/fonts/Manrope.ttf
+          weight: 800
+  assets:
+    - assets/content/
+    - assets/fonts/OFL.txt
+    - assets/icons/
+
+# Pinned upstream plugins; build-only patch documented in third_party/*/BOURSE_BUILD_PATCH.md.
+dependency_overrides:
+  google_sign_in_android:
+    path: third_party/google_sign_in_android
+  shared_preferences_android:
+    path: third_party/shared_preferences_android
+  url_launcher_android:
+    path: third_party/url_launcher_android

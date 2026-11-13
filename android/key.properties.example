@@ -1,0 +1,5 @@
+# Copy locally to key.properties. Never commit real credentials or keystore.
+storePassword=REPLACE_LOCALLY
+keyPassword=REPLACE_LOCALLY
+keyAlias=boursefacile
+storeFile=/absolute/path/outside/repository/boursefacile-upload.jks
